@@ -32,77 +32,7 @@ logged in even after closing the tab.
 
 ---
 
-## 🚀 Quick start (2 minutes, on-device mode)
 
-1. Download this folder.
-2. Open `index.html` in your browser (or publish to GitHub Pages — see below).
-3. Create a username + password and start studying.
-
-In this mode everything is stored **in your browser only** (localStorage). Great
-for trying it — but the leaderboard only shows accounts made on your device.
-
----
-
-## ☁️ Turn on the cloud (unique usernames everywhere + shared leaderboard)
-
-GitHub Pages can't run a server, so for *globally* unique usernames and a *real*
-shared leaderboard we use **Firebase** (free tier). Takes ~5 minutes, no coding.
-
-### 1. Create a Firebase project
-- Go to <https://console.firebase.google.com> → **Add project** → give it a name → create.
-
-### 2. Enable Authentication
-- Left menu → **Build → Authentication → Get started**.
-- Under **Sign-in method**, enable **Email/Password** → Save.
-
-### 3. Create the database
-- **Build → Firestore Database → Create database** → choose **Production mode** → pick a region.
-- Open the **Rules** tab, delete everything, paste the contents of **`firestore.rules`**
-  from this project, then **Publish**.
-
-### 4. Get your web config
-- Click the **⚙️ gear → Project settings** → scroll to **Your apps** → click the **`</>` (Web)** icon.
-- Register the app (any nickname). Copy the `firebaseConfig = { ... }` block.
-- Open **`js/firebase-config.js`** and paste your values over the placeholders.
-
-Example:
-```js
-export const firebaseConfig = {
-  apiKey: "AIzaSy....",
-  authDomain: "studyflow-1234.firebaseapp.com",
-  projectId: "studyflow-1234",
-  storageBucket: "studyflow-1234.appspot.com",
-  messagingSenderId: "1234567890",
-  appId: "1:1234567890:web:abc123"
-};
-```
-
-### 5. Authorize your site's domain
-- **Authentication → Settings → Authorized domains → Add domain** →
-  add `YOUR-USERNAME.github.io` (and `localhost` is already allowed for testing).
-
-Reload the site — the banner disappears and you're on the cloud. 🎉
-
-> Tip: the app auto-detects whether the config is filled in. Leave the
-> placeholders and it quietly runs in on-device mode.
-
----
-
-## 🌐 Host it on GitHub Pages
-
-1. Create a new **public** repository on GitHub (e.g. `studyflow`).
-2. Upload **all files in this folder** to the repo (keep the folder structure:
-   `index.html`, `css/`, `js/`).
-3. In the repo: **Settings → Pages**.
-4. Under **Build and deployment → Source**, pick **Deploy from a branch**, choose
-   branch **`main`** and folder **`/ (root)`**, then **Save**.
-5. Wait ~1 minute. Your site is live at:
-   `https://YOUR-USERNAME.github.io/studyflow/`
-6. *(If you enabled the cloud)* Add that domain in Firebase's **Authorized domains** (step 5 above).
-
-To update the site later, just edit files in the repo — Pages redeploys automatically.
-
----
 
 ## 🕒 How spaced repetition works
 
@@ -127,26 +57,6 @@ the next review automatically:
 
 > Browser notifications only fire while a StudyFlow tab is open (that's a limit
 > of static sites — no background server). The in-app **Due today** list is always accurate.
-
----
-
-## 📁 Project structure
-
-```
-study-tracker/
-├── index.html            # the whole UI (single page app)
-├── css/
-│   └── styles.css        # clean light theme
-├── js/
-│   ├── firebase-config.js  # 👈 paste your Firebase keys here (optional)
-│   ├── store.js            # data layer: Firebase + offline fallback
-│   ├── utils.js            # dates, formatting, stats
-│   ├── srs.js              # spaced-repetition scheduler
-│   ├── charts.js           # Chart.js helpers
-│   └── app.js              # app logic & rendering
-├── firestore.rules       # paste into Firebase
-└── README.md
-```
 
 ---
 
