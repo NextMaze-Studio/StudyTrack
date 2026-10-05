@@ -1,6 +1,15 @@
 /* =========================================================
    STUDYTRACK APP
 ========================================================= */
+const {
+    createClient
+} = window.supabase;
+
+
+const supabase = createClient(
+    window.STUDYTRACK_CONFIG.SUPABASE_URL,
+    window.STUDYTRACK_CONFIG.SUPABASE_ANON_KEY
+);
 
 const {
     createClient
