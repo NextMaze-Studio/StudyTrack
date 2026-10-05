@@ -1,0 +1,2186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyTrack</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #0f172a;
+    color: #f8fafc;
+}
+
+button, input, textarea {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* LOGIN */
+
+#authScreen {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    background:
+        radial-gradient(circle at top left, #2563eb55, transparent 35%),
+        radial-gradient(circle at bottom right, #7c3aed55, transparent 35%),
+        #0f172a;
+}
+
+.authBox {
+    width: 100%;
+    max-width: 430px;
+    background: #1e293b;
+    padding: 35px;
+    border-radius: 22px;
+    box-shadow: 0 25px 80px #0008;
+}
+
+.logo {
+    text-align: center;
+    font-size: 35px;
+    font-weight: 800;
+    margin-bottom: 8px;
+}
+
+.subtitle {
+    text-align: center;
+    color: #94a3b8;
+    margin-bottom: 30px;
+}
+
+.authBox input {
+    width: 100%;
+    padding: 14px;
+    margin-bottom: 14px;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    background: #0f172a;
+    color: white;
+    outline: none;
+}
+
+.authBox input:focus {
+    border-color: #3b82f6;
+}
+
+.primaryBtn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    background: #2563eb;
+    color: white;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+.primaryBtn:hover {
+    background: #1d4ed8;
+}
+
+.secondaryBtn {
+    width: 100%;
+    padding: 13px;
+    border: 1px solid #475569;
+    border-radius: 10px;
+    background: transparent;
+    color: white;
+    margin-top: 10px;
+}
+
+.secondaryBtn:hover {
+    background: #334155;
+}
+
+.error {
+    color: #f87171;
+    text-align: center;
+    margin: 12px 0;
+}
+
+.success {
+    color: #4ade80;
+    text-align: center;
+    margin: 12px 0;
+}
+
+/* APP */
+
+#app {
+    min-height: 100vh;
+}
+
+header {
+    background: #1e293b;
+    border-bottom: 1px solid #334155;
+    padding: 15px 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.headerLogo {
+    font-size: 24px;
+    font-weight: 800;
+}
+
+.headerRight {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.usernameBadge {
+    background: #334155;
+    padding: 8px 13px;
+    border-radius: 20px;
+    color: #cbd5e1;
+}
+
+.logoutBtn {
+    border: none;
+    background: #ef4444;
+    color: white;
+    padding: 9px 14px;
+    border-radius: 8px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 25px;
+}
+
+/* NAV */
+
+.nav {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    margin-bottom: 25px;
+}
+
+.nav button {
+    border: none;
+    padding: 11px 17px;
+    border-radius: 10px;
+    background: #1e293b;
+    color: #cbd5e1;
+    white-space: nowrap;
+}
+
+.nav button.active {
+    background: #2563eb;
+    color: white;
+}
+
+/* DASHBOARD */
+
+.welcome {
+    margin-bottom: 25px;
+}
+
+.welcome h1 {
+    margin: 0 0 5px;
+}
+
+.welcome p {
+    margin: 0;
+    color: #94a3b8;
+}
+
+.timerCard {
+    background: linear-gradient(135deg, #1d4ed8, #4338ca);
+    border-radius: 22px;
+    padding: 35px;
+    text-align: center;
+    margin-bottom: 25px;
+    box-shadow: 0 15px 50px #1d4ed833;
+}
+
+.timerLabel {
+    color: #bfdbfe;
+    margin-bottom: 10px;
+}
+
+#timer {
+    font-size: clamp(50px, 10vw, 85px);
+    font-weight: 800;
+    letter-spacing: 3px;
+}
+
+.timerButtons {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.timerButtons button {
+    padding: 13px 25px;
+    border-radius: 10px;
+    border: none;
+    font-weight: bold;
+}
+
+.startBtn {
+    background: #22c55e;
+    color: white;
+}
+
+.stopBtn {
+    background: #ef4444;
+    color: white;
+}
+
+.pauseBtn {
+    background: #f59e0b;
+    color: white;
+}
+
+/* CARDS */
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+}
+
+.statCard {
+    background: #1e293b;
+    padding: 20px;
+    border-radius: 15px;
+    border: 1px solid #334155;
+}
+
+.statTitle {
+    color: #94a3b8;
+    font-size: 14px;
+}
+
+.statValue {
+    font-size: 28px;
+    font-weight: 800;
+    margin-top: 8px;
+}
+
+/* SECTIONS */
+
+.section {
+    display: none;
+}
+
+.section.active {
+    display: block;
+}
+
+.panel {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 18px;
+    padding: 22px;
+    margin-bottom: 20px;
+}
+
+.panel h2 {
+    margin-top: 0;
+}
+
+/* NOTES */
+
+textarea {
+    width: 100%;
+    min-height: 120px;
+    resize: vertical;
+    padding: 14px;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    color: white;
+    outline: none;
+}
+
+select {
+    width: 100%;
+    padding: 12px;
+    background: #0f172a;
+    color: white;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    margin-bottom: 12px;
+}
+
+.noteItem {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 15px;
+    margin-top: 10px;
+}
+
+.noteDate {
+    color: #64748b;
+    font-size: 12px;
+}
+
+/* HISTORY */
+
+.historyItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #0f172a;
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    border: 1px solid #334155;
+}
+
+.historySubject {
+    font-weight: bold;
+}
+
+.historyTime {
+    color: #60a5fa;
+}
+
+/* GRAPH */
+
+.chart {
+    height: 250px;
+    display: flex;
+    align-items: end;
+    gap: 8px;
+    padding: 20px 5px 0;
+    overflow-x: auto;
+}
+
+.barWrap {
+    min-width: 38px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: end;
+    align-items: center;
+}
+
+.bar {
+    width: 28px;
+    background: linear-gradient(#60a5fa, #2563eb);
+    border-radius: 7px 7px 0 0;
+    min-height: 3px;
+}
+
+.barLabel {
+    font-size: 10px;
+    color: #94a3b8;
+    margin-top: 7px;
+}
+
+.barTime {
+    font-size: 9px;
+    color: #cbd5e1;
+    margin-bottom: 3px;
+}
+
+/* LEADERBOARD */
+
+.rank {
+    display: grid;
+    grid-template-columns: 50px 1fr 100px;
+    align-items: center;
+    padding: 15px;
+    background: #0f172a;
+    border-radius: 10px;
+    margin-bottom: 8px;
+}
+
+.rank:first-child {
+    background: #854d0e55;
+}
+
+/* RESPONSIVE */
+
+@media(max-width:600px) {
+    header {
+        padding: 12px;
+    }
+
+    .headerLogo {
+        font-size: 19px;
+    }
+
+    .usernameBadge {
+        display: none;
+    }
+
+    .container {
+        padding: 15px;
+    }
+
+    .timerCard {
+        padding: 25px 15px;
+    }
+
+    .timerButtons {
+        flex-wrap: wrap;
+    }
+
+    .historyItem {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- AUTH -->
+<div id="authScreen">
+
+    <div class="authBox">
+
+        <div class="logo">📚 StudyTrack</div>
+        <div class="subtitle">
+            Track your study time. Build consistency.
+        </div>
+
+        <div id="authMessage"></div>
+
+        <input id="usernameInput"
+               type="text"
+               placeholder="Username"
+               maxlength="20"
+               autocomplete="username">
+
+        <input id="passwordInput"
+               type="password"
+               placeholder="Password"
+               autocomplete="current-password">
+
+        <button class="primaryBtn" onclick="login()">
+            Login
+        </button>
+
+        <button class="secondaryBtn" onclick="signup()">
+            Create Account
+        </button>
+
+        <p style="font-size:12px;color:#64748b;text-align:center;margin-top:20px;">
+            Your data is stored locally in this browser.
+        </p>
+
+    </div>
+
+</div>
+
+
+<!-- APP -->
+<div id="app" class="hidden">
+
+<header>
+
+    <div class="headerLogo">
+        📚 StudyTrack
+    </div>
+
+    <div class="headerRight">
+
+        <div class="usernameBadge" id="headerUsername"></div>
+
+        <button class="logoutBtn" onclick="logout()">
+            Logout
+        </button>
+
+    </div>
+
+</header>
+
+
+<div class="container">
+
+    <div class="nav">
+
+        <button class="active" onclick="showSection('dashboard',this)">
+            Dashboard
+        </button>
+
+        <button onclick="showSection('history',this)">
+            History
+        </button>
+
+        <button onclick="showSection('analytics',this)">
+            Analytics
+        </button>
+
+        <button onclick="showSection('notes',this)">
+            Study Notes
+        </button>
+
+        <button onclick="showSection('review',this)">
+            Spaced Repetition
+        </button>
+
+        <button onclick="showSection('leaderboard',this)">
+            Leaderboard
+        </button>
+
+    </div>
+
+
+    <!-- DASHBOARD -->
+
+    <section id="dashboard" class="section active">
+
+        <div class="welcome">
+
+            <h1>
+                Welcome back, <span id="welcomeUsername"></span> 👋
+            </h1>
+
+            <p>
+                Ready to study?
+            </p>
+
+        </div>
+
+
+        <div class="timerCard">
+
+            <div class="timerLabel">
+                STUDY TIMER
+            </div>
+
+            <div id="timer">
+                00:00:00
+            </div>
+
+            <div class="timerButtons">
+
+                <button class="startBtn" onclick="startTimer()">
+                    ▶ Start
+                </button>
+
+                <button class="pauseBtn" onclick="pauseTimer()">
+                    ⏸ Pause
+                </button>
+
+                <button class="stopBtn" onclick="stopTimer()">
+                    ■ Stop & Save
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <div class="grid">
+
+            <div class="statCard">
+                <div class="statTitle">Today</div>
+                <div class="statValue" id="todayStat">0m</div>
+            </div>
+
+            <div class="statCard">
+                <div class="statTitle">Last 7 Days</div>
+                <div class="statValue" id="weekStat">0h</div>
+            </div>
+
+            <div class="statCard">
+                <div class="statTitle">Last 30 Days</div>
+                <div class="statValue" id="monthStat">0h</div>
+            </div>
+
+            <div class="statCard">
+                <div class="statTitle">Total Study</div>
+                <div class="statValue" id="totalStat">0h</div>
+            </div>
+
+            <div class="statCard">
+                <div class="statTitle">Sessions</div>
+                <div class="statValue" id="sessionsStat">0</div>
+            </div>
+
+            <div class="statCard">
+                <div class="statTitle">Current Streak</div>
+                <div class="statValue" id="streakStat">0 days</div>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- HISTORY -->
+
+    <section id="history" class="section">
+
+        <div class="panel">
+
+            <h2>📅 Study History</h2>
+
+            <div id="historyList"></div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ANALYTICS -->
+
+    <section id="analytics" class="section">
+
+        <div class="panel">
+
+            <h2>📊 Study Analytics</h2>
+
+            <div class="grid">
+
+                <div class="statCard">
+                    <div class="statTitle">Today</div>
+                    <div class="statValue" id="aToday">0m</div>
+                </div>
+
+                <div class="statCard">
+                    <div class="statTitle">Yesterday</div>
+                    <div class="statValue" id="aYesterday">0m</div>
+                </div>
+
+                <div class="statCard">
+                    <div class="statTitle">Last 3 Days</div>
+                    <div class="statValue" id="a3">0h</div>
+                </div>
+
+                <div class="statCard">
+                    <div class="statTitle">Last 7 Days</div>
+                    <div class="statValue" id="a7">0h</div>
+                </div>
+
+                <div class="statCard">
+                    <div class="statTitle">Last 14 Days</div>
+                    <div class="statValue" id="a14">0h</div>
+                </div>
+
+                <div class="statCard">
+                    <div class="statTitle">Last 30 Days</div>
+                    <div class="statValue" id="a30">0h</div>
+                </div>
+
+                <div class="statCard">
+                    <div class="statTitle">Last 90 Days</div>
+                    <div class="statValue" id="a90">0h</div>
+                </div>
+
+                <div class="statCard">
+                    <div class="statTitle">Average / Day</div>
+                    <div class="statValue" id="aAverage">0m</div>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="panel">
+
+            <h2>📈 Last 14 Days</h2>
+
+            <div class="chart" id="chart"></div>
+
+        </div>
+
+    </section>
+
+
+    <!-- NOTES -->
+
+    <section id="notes" class="section">
+
+        <div class="panel">
+
+            <h2>📝 Study Notes</h2>
+
+            <select id="noteSubject">
+
+                <option>General</option>
+                <option>Mathematics</option>
+                <option>Physics</option>
+                <option>Chemistry</option>
+                <option>Biology</option>
+                <option>Computer Science</option>
+                <option>English</option>
+                <option>Other</option>
+
+            </select>
+
+            <textarea id="noteText"
+                      placeholder="What did you study? What did you learn?"></textarea>
+
+            <button class="primaryBtn"
+                    onclick="saveNote()">
+                Save Note
+            </button>
+
+        </div>
+
+
+        <div class="panel">
+
+            <h2>Your Notes</h2>
+
+            <div id="notesList"></div>
+
+        </div>
+
+    </section>
+
+
+    <!-- SPACED REPETITION -->
+
+    <section id="review" class="section">
+
+        <div class="panel">
+
+            <h2>🧠 Spaced Repetition</h2>
+
+            <p style="color:#94a3b8;">
+                Add something you learned and StudyTrack will calculate
+                suggested review dates.
+            </p>
+
+            <input id="reviewTopic"
+                   type="text"
+                   placeholder="Topic to remember"
+                   style="width:100%;padding:13px;background:#0f172a;border:1px solid #334155;border-radius:10px;color:white;margin-bottom:10px;">
+
+            <button class="primaryBtn"
+                    onclick="addReview()">
+                Add Topic
+            </button>
+
+        </div>
+
+
+        <div class="panel">
+
+            <h2>Review Schedule</h2>
+
+            <div id="reviewList"></div>
+
+        </div>
+
+    </section>
+
+
+    <!-- LEADERBOARD -->
+
+    <section id="leaderboard" class="section">
+
+        <div class="panel">
+
+            <h2>🏆 Leaderboard</h2>
+
+            <p style="color:#94a3b8;">
+                Local leaderboard for accounts created in this browser.
+            </p>
+
+            <div id="leaderboardList"></div>
+
+        </div>
+
+    </section>
+
+</div>
+
+</div>
+
+
+<script>
+
+/* =========================================================
+   STUDYTRACK
+   Single-file HTML application
+   ========================================================= */
+
+
+/* ---------- STORAGE ---------- */
+
+const USERS_KEY = "studytrack_users";
+const CURRENT_KEY = "studytrack_current";
+
+let users = JSON.parse(localStorage.getItem(USERS_KEY) || "{}");
+
+let currentUser = localStorage.getItem(CURRENT_KEY);
+
+
+/* ---------- TIMER ---------- */
+
+let timerInterval = null;
+
+let timerRunning = false;
+
+let timerStart = null;
+
+let timerElapsed = 0;
+
+
+/* ---------- HELPERS ---------- */
+
+function saveUsers() {
+
+    localStorage.setItem(
+        USERS_KEY,
+        JSON.stringify(users)
+    );
+
+}
+
+
+function getUser() {
+
+    if (!currentUser || !users[currentUser]) {
+        return null;
+    }
+
+    return users[currentUser];
+
+}
+
+
+function saveCurrentUser() {
+
+    if (currentUser && users[currentUser]) {
+
+        saveUsers();
+
+    }
+
+}
+
+
+function formatDuration(seconds) {
+
+    seconds = Math.max(0, Math.floor(seconds));
+
+    const hours = Math.floor(seconds / 3600);
+
+    const minutes = Math.floor(
+        (seconds % 3600) / 60
+    );
+
+    const secs = seconds % 60;
+
+    return String(hours).padStart(2,"0") +
+        ":" +
+        String(minutes).padStart(2,"0") +
+        ":" +
+        String(secs).padStart(2,"0");
+
+}
+
+
+function shortDuration(seconds) {
+
+    seconds = Math.floor(seconds);
+
+    if (seconds < 60) {
+
+        return seconds + "s";
+
+    }
+
+    if (seconds < 3600) {
+
+        return Math.floor(seconds / 60) + "m";
+
+    }
+
+    const h = Math.floor(seconds / 3600);
+
+    const m = Math.floor(
+        (seconds % 3600) / 60
+    );
+
+    return h + "h " + m + "m";
+
+}
+
+
+function dateKey(date = new Date()) {
+
+    const y = date.getFullYear();
+
+    const m = String(
+        date.getMonth() + 1
+    ).padStart(2,"0");
+
+    const d = String(
+        date.getDate()
+    ).padStart(2,"0");
+
+    return `${y}-${m}-${d}`;
+
+}
+
+
+function dateFromKey(key) {
+
+    const parts = key.split("-");
+
+    return new Date(
+        Number(parts[0]),
+        Number(parts[1]) - 1,
+        Number(parts[2])
+    );
+
+}
+
+
+function daysAgo(n) {
+
+    const d = new Date();
+
+    d.setHours(0,0,0,0);
+
+    d.setDate(
+        d.getDate() - n
+    );
+
+    return dateKey(d);
+
+}
+
+
+function totalForDays(n) {
+
+    const user = getUser();
+
+    if (!user) return 0;
+
+    let total = 0;
+
+    for (let i = 0; i < n; i++) {
+
+        const key = daysAgo(i);
+
+        total += user.daily[key] || 0;
+
+    }
+
+    return total;
+
+}
+
+
+/* ---------- AUTH ---------- */
+
+function showMessage(message, type="error") {
+
+    const box =
+        document.getElementById("authMessage");
+
+    box.className = type;
+
+    box.textContent = message;
+
+}
+
+
+function signup() {
+
+    const username =
+        document.getElementById("usernameInput")
+        .value
+        .trim();
+
+    const password =
+        document.getElementById("passwordInput")
+        .value;
+
+    if (!username || !password) {
+
+        showMessage(
+            "Please enter a username and password."
+        );
+
+        return;
+
+    }
+
+    if (username.length < 3) {
+
+        showMessage(
+            "Username must be at least 3 characters."
+        );
+
+        return;
+
+    }
+
+    if (password.length < 4) {
+
+        showMessage(
+            "Password must be at least 4 characters."
+        );
+
+        return;
+
+    }
+
+
+    const normalized =
+        username.toLowerCase();
+
+
+    if (users[normalized]) {
+
+        showMessage(
+            "That username is already taken."
+        );
+
+        return;
+
+    }
+
+
+    users[normalized] = {
+
+        username: username,
+
+        password: password,
+
+        sessions: [],
+
+        daily: {},
+
+        notes: [],
+
+        reviews: []
+
+    };
+
+
+    saveUsers();
+
+    currentUser = normalized;
+
+    localStorage.setItem(
+        CURRENT_KEY,
+        currentUser
+    );
+
+    openApp();
+
+}
+
+
+function login() {
+
+    const username =
+        document.getElementById("usernameInput")
+        .value
+        .trim()
+        .toLowerCase();
+
+    const password =
+        document.getElementById("passwordInput")
+        .value;
+
+
+    if (!username || !password) {
+
+        showMessage(
+            "Enter your username and password."
+        );
+
+        return;
+
+    }
+
+
+    if (!users[username]) {
+
+        showMessage(
+            "Username not found."
+        );
+
+        return;
+
+    }
+
+
+    if (users[username].password !== password) {
+
+        showMessage(
+            "Incorrect password."
+        );
+
+        return;
+
+    }
+
+
+    currentUser = username;
+
+    localStorage.setItem(
+        CURRENT_KEY,
+        currentUser
+    );
+
+    openApp();
+
+}
+
+
+function logout() {
+
+    if (timerRunning) {
+
+        alert(
+            "Stop the timer before logging out."
+        );
+
+        return;
+
+    }
+
+
+    currentUser = null;
+
+    localStorage.removeItem(
+        CURRENT_KEY
+    );
+
+    document
+        .getElementById("app")
+        .classList.add("hidden");
+
+    document
+        .getElementById("authScreen")
+        .classList.remove("hidden");
+
+}
+
+
+/* ---------- APP ---------- */
+
+function openApp() {
+
+    document
+        .getElementById("authScreen")
+        .classList.add("hidden");
+
+    document
+        .getElementById("app")
+        .classList.remove("hidden");
+
+
+    document
+        .getElementById("headerUsername")
+        .textContent =
+        "@" + getUser().username;
+
+
+    document
+        .getElementById("welcomeUsername")
+        .textContent =
+        getUser().username;
+
+
+    updateAll();
+
+}
+
+
+function showSection(id, button) {
+
+    document
+        .querySelectorAll(".section")
+        .forEach(section => {
+
+            section.classList.remove("active");
+
+        });
+
+
+    document
+        .getElementById(id)
+        .classList.add("active");
+
+
+    document
+        .querySelectorAll(".nav button")
+        .forEach(btn => {
+
+            btn.classList.remove("active");
+
+        });
+
+
+    button.classList.add("active");
+
+
+    updateAll();
+
+}
+
+
+/* ---------- TIMER ---------- */
+
+function startTimer() {
+
+    if (timerRunning) return;
+
+
+    timerRunning = true;
+
+    timerStart =
+        Date.now() - timerElapsed * 1000;
+
+
+    timerInterval =
+        setInterval(updateTimer, 250);
+
+    updateTimer();
+
+}
+
+
+function pauseTimer() {
+
+    if (!timerRunning) return;
+
+
+    timerElapsed =
+        Math.floor(
+            (Date.now() - timerStart) / 1000
+        );
+
+
+    timerRunning = false;
+
+    clearInterval(timerInterval);
+
+    updateTimer();
+
+}
+
+
+function stopTimer() {
+
+    if (!timerRunning && timerElapsed === 0) {
+
+        return;
+
+    }
+
+
+    if (timerRunning) {
+
+        timerElapsed =
+            Math.floor(
+                (Date.now() - timerStart) / 1000
+            );
+
+    }
+
+
+    if (timerElapsed < 1) {
+
+        resetTimer();
+
+        return;
+
+    }
+
+
+    const user = getUser();
+
+    const seconds = timerElapsed;
+
+    const now = new Date();
+
+    const key = dateKey(now);
+
+
+    user.sessions.push({
+
+        id: Date.now(),
+
+        start: new Date(
+            now.getTime() - seconds * 1000
+        ).toISOString(),
+
+        end: now.toISOString(),
+
+        duration: seconds,
+
+        date: key
+
+    });
+
+
+    user.daily[key] =
+        (user.daily[key] || 0) + seconds;
+
+
+    saveCurrentUser();
+
+
+    alert(
+        "Study session saved: " +
+        shortDuration(seconds)
+    );
+
+
+    resetTimer();
+
+    updateAll();
+
+}
+
+
+function resetTimer() {
+
+    timerRunning = false;
+
+    clearInterval(timerInterval);
+
+    timerInterval = null;
+
+    timerElapsed = 0;
+
+    timerStart = null;
+
+    document
+        .getElementById("timer")
+        .textContent = "00:00:00";
+
+}
+
+
+function updateTimer() {
+
+    let elapsed = timerElapsed;
+
+
+    if (timerRunning) {
+
+        elapsed =
+            Math.floor(
+                (Date.now() - timerStart) / 1000
+            );
+
+    }
+
+
+    document
+        .getElementById("timer")
+        .textContent =
+        formatDuration(elapsed);
+
+}
+
+
+/* ---------- DASHBOARD ---------- */
+
+function updateDashboard() {
+
+    const user = getUser();
+
+    if (!user) return;
+
+
+    const today =
+        user.daily[dateKey()] || 0;
+
+    const week =
+        totalForDays(7);
+
+    const month =
+        totalForDays(30);
+
+    const total =
+        Object.values(user.daily)
+        .reduce(
+            (a,b) => a + b,
+            0
+        );
+
+
+    document.getElementById("todayStat")
+        .textContent =
+        shortDuration(today);
+
+
+    document.getElementById("weekStat")
+        .textContent =
+        shortDuration(week);
+
+
+    document.getElementById("monthStat")
+        .textContent =
+        shortDuration(month);
+
+
+    document.getElementById("totalStat")
+        .textContent =
+        shortDuration(total);
+
+
+    document.getElementById("sessionsStat")
+        .textContent =
+        user.sessions.length;
+
+
+    document.getElementById("streakStat")
+        .textContent =
+        calculateStreak() + " days";
+
+}
+
+
+/* ---------- STREAK ---------- */
+
+function calculateStreak() {
+
+    const user = getUser();
+
+    if (!user) return 0;
+
+
+    let streak = 0;
+
+
+    for (let i = 0; i < 10000; i++) {
+
+        if ((user.daily[daysAgo(i)] || 0) > 0) {
+
+            streak++;
+
+        } else {
+
+            break;
+
+        }
+
+    }
+
+
+    return streak;
+
+}
+
+
+/* ---------- HISTORY ---------- */
+
+function updateHistory() {
+
+    const user = getUser();
+
+    const box =
+        document.getElementById("historyList");
+
+
+    if (!user || user.sessions.length === 0) {
+
+        box.innerHTML =
+            '<p style="color:#64748b;">No study sessions yet.</p>';
+
+        return;
+
+    }
+
+
+    const sessions =
+        [...user.sessions]
+        .reverse();
+
+
+    box.innerHTML =
+        sessions.map(session => {
+
+            const start =
+                new Date(session.start);
+
+            const end =
+                new Date(session.end);
+
+
+            return `
+
+                <div class="historyItem">
+
+                    <div>
+
+                        <div class="historySubject">
+                            📚 Study Session
+                        </div>
+
+                        <div style="color:#94a3b8;font-size:13px;">
+                            ${start.toLocaleDateString()}
+                            ·
+                            ${start.toLocaleTimeString([],{
+                                hour:"2-digit",
+                                minute:"2-digit"
+                            })}
+                            -
+                            ${end.toLocaleTimeString([],{
+                                hour:"2-digit",
+                                minute:"2-digit"
+                            })}
+                        </div>
+
+                    </div>
+
+                    <div class="historyTime">
+                        ${shortDuration(session.duration)}
+                    </div>
+
+                </div>
+
+            `;
+
+        }).join("");
+
+}
+
+
+/* ---------- ANALYTICS ---------- */
+
+function updateAnalytics() {
+
+    const values = {
+
+        aToday: totalForDays(1),
+
+        aYesterday:
+            getUser().daily[daysAgo(1)] || 0,
+
+        a3: totalForDays(3),
+
+        a7: totalForDays(7),
+
+        a14: totalForDays(14),
+
+        a30: totalForDays(30),
+
+        a90: totalForDays(90)
+
+    };
+
+
+    Object.entries(values).forEach(
+        ([id,value]) => {
+
+            document
+                .getElementById(id)
+                .textContent =
+                shortDuration(value);
+
+        }
+    );
+
+
+    const total90 =
+        totalForDays(90);
+
+
+    document
+        .getElementById("aAverage")
+        .textContent =
+        shortDuration(
+            Math.floor(total90 / 90)
+        );
+
+
+    drawChart();
+
+}
+
+
+function drawChart() {
+
+    const user = getUser();
+
+    const chart =
+        document.getElementById("chart");
+
+
+    let values = [];
+
+
+    for (let i = 13; i >= 0; i--) {
+
+        values.push({
+
+            key: daysAgo(i),
+
+            value:
+                user.daily[daysAgo(i)] || 0
+
+        });
+
+    }
+
+
+    const max =
+        Math.max(
+            ...values.map(x => x.value),
+            1
+        );
+
+
+    chart.innerHTML =
+        values.map(item => {
+
+            const height =
+                Math.max(
+                    3,
+                    (item.value / max) * 180
+                );
+
+
+            const date =
+                dateFromKey(item.key);
+
+
+            return `
+
+                <div class="barWrap">
+
+                    <div class="barTime">
+                        ${shortDuration(item.value)}
+                    </div>
+
+                    <div
+                        class="bar"
+                        style="height:${height}px"
+                        title="${item.key}: ${shortDuration(item.value)}">
+                    </div>
+
+                    <div class="barLabel">
+                        ${date.getDate()}/${date.getMonth()+1}
+                    </div>
+
+                </div>
+
+            `;
+
+        }).join("");
+
+}
+
+
+/* ---------- NOTES ---------- */
+
+function saveNote() {
+
+    const text =
+        document
+        .getElementById("noteText")
+        .value
+        .trim();
+
+
+    const subject =
+        document
+        .getElementById("noteSubject")
+        .value;
+
+
+    if (!text) {
+
+        alert("Write something first.");
+
+        return;
+
+    }
+
+
+    const user = getUser();
+
+
+    user.notes.push({
+
+        id: Date.now(),
+
+        subject: subject,
+
+        text: text,
+
+        date: new Date().toISOString()
+
+    });
+
+
+    saveCurrentUser();
+
+
+    document
+        .getElementById("noteText")
+        .value = "";
+
+
+    updateNotes();
+
+}
+
+
+function deleteNote(id) {
+
+    const user = getUser();
+
+
+    user.notes =
+        user.notes.filter(
+            note => note.id !== id
+        );
+
+
+    saveCurrentUser();
+
+    updateNotes();
+
+}
+
+
+function updateNotes() {
+
+    const user = getUser();
+
+    const box =
+        document.getElementById("notesList");
+
+
+    if (!user.notes.length) {
+
+        box.innerHTML =
+            '<p style="color:#64748b;">No notes yet.</p>';
+
+        return;
+
+    }
+
+
+    box.innerHTML =
+        [...user.notes]
+        .reverse()
+        .map(note => `
+
+            <div class="noteItem">
+
+                <strong>
+                    ${escapeHTML(note.subject)}
+                </strong>
+
+                <div style="margin-top:8px;white-space:pre-wrap;">
+                    ${escapeHTML(note.text)}
+                </div>
+
+                <div class="noteDate">
+                    ${new Date(note.date).toLocaleString()}
+                </div>
+
+                <button
+                    onclick="deleteNote(${note.id})"
+                    style="margin-top:8px;background:#ef4444;color:white;border:0;padding:6px 10px;border-radius:7px;">
+                    Delete
+                </button>
+
+            </div>
+
+        `).join("");
+
+}
+
+
+/* ---------- SPACED REPETITION ---------- */
+
+function addReview() {
+
+    const topic =
+        document
+        .getElementById("reviewTopic")
+        .value
+        .trim();
+
+
+    if (!topic) {
+
+        alert("Enter a topic.");
+
+        return;
+
+    }
+
+
+    const user = getUser();
+
+    const today = new Date();
+
+
+    /*
+       Simple spaced repetition schedule:
+       Day 1
+       Day 3
+       Day 7
+       Day 14
+       Day 30
+       Day 60
+    */
+
+    const intervals =
+        [1,3,7,14,30,60];
+
+
+    const reviews =
+        intervals.map(days => {
+
+            const d =
+                new Date(today);
+
+            d.setDate(
+                d.getDate() + days
+            );
+
+            return dateKey(d);
+
+        });
+
+
+    user.reviews.push({
+
+        id: Date.now(),
+
+        topic: topic,
+
+        created: dateKey(today),
+
+        reviews: reviews,
+
+        completed: []
+
+    });
+
+
+    saveCurrentUser();
+
+
+    document
+        .getElementById("reviewTopic")
+        .value = "";
+
+
+    updateReviews();
+
+}
+
+
+function completeReview(id, index) {
+
+    const user = getUser();
+
+    const item =
+        user.reviews.find(
+            x => x.id === id
+        );
+
+
+    if (!item) return;
+
+
+    if (!item.completed.includes(index)) {
+
+        item.completed.push(index);
+
+    }
+
+
+    saveCurrentUser();
+
+    updateReviews();
+
+}
+
+
+function deleteReview(id) {
+
+    const user = getUser();
+
+    user.reviews =
+        user.reviews.filter(
+            x => x.id !== id
+        );
+
+    saveCurrentUser();
+
+    updateReviews();
+
+}
+
+
+function updateReviews() {
+
+    const user = getUser();
+
+    const box =
+        document.getElementById("reviewList");
+
+
+    if (!user.reviews.length) {
+
+        box.innerHTML =
+            '<p style="color:#64748b;">No review topics yet.</p>';
+
+        return;
+
+    }
+
+
+    const today =
+        dateKey();
+
+
+    box.innerHTML =
+        [...user.reviews]
+        .reverse()
+        .map(item => {
+
+            let html = `
+
+                <div class="noteItem">
+
+                    <strong>
+                        🧠 ${escapeHTML(item.topic)}
+                    </strong>
+
+                    <div style="margin-top:12px;">
+
+            `;
+
+
+            item.reviews.forEach(
+                (date,index) => {
+
+                    const completed =
+                        item.completed.includes(index);
+
+
+                    let status =
+                        completed
+                        ? "✅ Completed"
+                        : date <= today
+                        ? "🔴 Review now"
+                        : "📅 " + date;
+
+
+                    html += `
+
+                        <div style="
+                            display:flex;
+                            justify-content:space-between;
+                            align-items:center;
+                            padding:8px;
+                            margin:5px 0;
+                            background:#1e293b;
+                            border-radius:8px;
+                        ">
+
+                            <span>
+                                Review ${index + 1}
+                            </span>
+
+                            <span>
+                                ${status}
+                            </span>
+
+                            ${
+                                completed
+                                ? ""
+                                : `
+                                    <button
+                                        onclick="completeReview(${item.id},${index})"
+                                        style="
+                                            background:#22c55e;
+                                            color:white;
+                                            border:0;
+                                            border-radius:6px;
+                                            padding:5px 8px;
+                                        ">
+                                        Done
+                                    </button>
+                                `
+                            }
+
+                        </div>
+
+                    `;
+
+                }
+            );
+
+
+            html += `
+
+                    </div>
+
+                    <button
+                        onclick="deleteReview(${item.id})"
+                        style="
+                            background:#ef4444;
+                            color:white;
+                            border:0;
+                            padding:6px 10px;
+                            border-radius:7px;
+                            margin-top:8px;
+                        ">
+                        Delete
+                    </button>
+
+                </div>
+
+            `;
+
+
+            return html;
+
+        }).join("");
+
+}
+
+
+/* ---------- LEADERBOARD ---------- */
+
+function updateLeaderboard() {
+
+    const box =
+        document
+        .getElementById("leaderboardList");
+
+
+    const ranking =
+        Object.values(users)
+        .map(user => ({
+
+            username: user.username,
+
+            total:
+                Object.values(user.daily)
+                .reduce(
+                    (a,b) => a + b,
+                    0
+                )
+
+        }))
+        .sort(
+            (a,b) => b.total - a.total
+        );
+
+
+    if (!ranking.length) {
+
+        box.innerHTML =
+            '<p style="color:#64748b;">No users yet.</p>';
+
+        return;
+
+    }
+
+
+    box.innerHTML =
+        ranking.map((user,index) => `
+
+            <div class="rank">
+
+                <strong>
+                    #${index + 1}
+                </strong>
+
+                <span>
+                    ${escapeHTML(user.username)}
+                </span>
+
+                <strong>
+                    ${shortDuration(user.total)}
+                </strong>
+
+            </div>
+
+        `).join("");
+
+}
+
+
+/* ---------- SECURITY / HTML ESCAPING ---------- */
+
+function escapeHTML(value) {
+
+    return String(value)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+
+}
+
+
+/* ---------- UPDATE EVERYTHING ---------- */
+
+function updateAll() {
+
+    if (!getUser()) return;
+
+    updateDashboard();
+
+    updateHistory();
+
+    updateAnalytics();
+
+    updateNotes();
+
+    updateReviews();
+
+    updateLeaderboard();
+
+}
+
+
+/* ---------- RESTORE LOGIN ---------- */
+
+if (
+    currentUser &&
+    users[currentUser]
+) {
+
+    openApp();
+
+}
+
+</script>
+
+</body>
+</html>
