@@ -2,16 +2,11 @@
    STUDYTRACK APP
 ========================================================= */
 
-/* =========================================================
-   STUDYTRACK APP
-========================================================= */
+"use strict";
 
-const supabaseClient.Client =
-    window.supabaseClient..createClient(
-        window.STUDYTRACK_CONFIG.supabaseClient._URL,
-        window.STUDYTRACK_CONFIG.supabaseClient._ANON_KEY
-    );
-
+const supabase = window.supabase.createClient(
+    window.STUDYTRACK_CONFIG.SUPABASE_URL,
+    window.STUDYTRACK_CONFIG.SUPABASE_ANON_KEY
 );
 
 
@@ -36,57 +31,66 @@ let timerState = {
 
 let analyticsRange = 7;
 
+const TIMER_STORAGE_KEY = "studytrack_active_timer";
+
 
 /* =========================================================
    INITIALIZATION
 ========================================================= */
 
-document.addEventListener(
-    "DOMContentLoaded",
-    async () => {
+document.addEventListener("DOMContentLoaded", async () => {
 
-        setDateText();
+    console.log("StudyTrack loaded.");
 
-        await restoreTimer();
+    setDateText();
 
-        const {
-            data
-        } = await supabaseClient..auth.getSession();
+    restoreTimer();
 
-        if (data.session) {
+    restoreTimerUI();
 
-            currentUser =
-                data.session.user;
+    const {
+        data,
+        error
+    } = await supabase.auth.getSession();
 
-            await initializeApp();
-
-        } else {
-
-            showAuth();
-
-        }
+    if (error) {
+        console.error("Auth session error:", error);
+        showAuth();
+        return;
     }
-);
 
+    if (data.session) {
 
-supabaseClient..auth.onAuthStateChange(
-    async (event, session) => {
+        currentUser = data.session.user;
 
-        if (session) {
+        await initializeApp();
 
-            currentUser =
-                session.user;
+    } else {
 
-            await initializeApp();
-
-        } else {
-
-            currentUser = null;
-
-            showAuth();
-        }
+        showAuth();
     }
-);
+});
+
+
+supabase.auth.onAuthStateChange(async (event, session) => {
+
+    console.log("Auth event:", event);
+
+    if (session) {
+
+        currentUser = session.user;
+
+        await initializeApp();
+
+    } else {
+
+        currentUser = null;
+
+        currentProfile = null;
+
+        showAuth();
+    }
+});
 
 
 /* =========================================================
@@ -102,6 +106,8 @@ function showAuth() {
     document
         .getElementById("appScreen")
         .classList.add("hidden");
+
+    showLogin();
 }
 
 
@@ -135,10 +141,7 @@ function showSignup() {
 
 function usernameEmail(username) {
 
-    return (
-        username.toLowerCase().trim()
-        + "@studytrack.local"
-    );
+    return username.toLowerCase().trim() + "@studytrack.local";
 }
 
 
@@ -188,30 +191,25 @@ async function signup() {
 
     if (password !== password2) {
 
-        toast(
-            "Passwords do not match."
-        );
+        toast("Passwords do not match.");
 
         return;
     }
 
 
-    const email =
-        usernameEmail(username);
+    const email = usernameEmail(username);
 
+    setAuthButtonsDisabled(true);
 
-    const {
-        data,
-        error
-    } =
-        await supabaseClient..auth.signUp({
+    try {
 
+        const {
+            data,
+            error
+        } = await supabase.auth.signUp({
             email,
-
             password,
-
             options: {
-
                 data: {
                     username
                 }
@@ -219,29 +217,40 @@ async function signup() {
         });
 
 
-    if (error) {
+        if (error) {
 
-        toast(
-            cleanError(error.message)
-        );
+            console.error("Signup error:", error);
 
-        return;
-    }
+            toast(cleanError(error.message));
+
+            return;
+        }
 
 
-    if (data.session) {
+        console.log("Signup result:", data);
 
-        toast(
-            "Account created!"
-        );
+        if (data.session) {
 
-    } else {
+            toast("Account created!");
 
-        toast(
-            "Account created. Check your authentication settings if login does not happen automatically."
-        );
+        } else {
 
-        showLogin();
+            toast(
+                "Account created. Check your email if confirmation is required."
+            );
+
+            showLogin();
+        }
+
+    } catch (error) {
+
+        console.error("Signup exception:", error);
+
+        toast("Could not create account.");
+
+    } finally {
+
+        setAuthButtonsDisabled(false);
     }
 }
 
@@ -267,41 +276,73 @@ async function login() {
 
     if (!username || !password) {
 
-        toast(
-            "Enter your username and password."
-        );
+        toast("Enter your username and password.");
 
         return;
     }
 
 
-    const {
-        data,
-        error
-    } =
-        await supabaseClient..auth.signInWithPassword({
+    const email = usernameEmail(username);
 
-            email:
-                usernameEmail(username),
+    setAuthButtonsDisabled(true);
 
+    try {
+
+        const {
+            data,
+            error
+        } = await supabase.auth.signInWithPassword({
+            email,
             password
         });
 
 
-    if (error) {
+        if (error) {
 
-        toast(
-            "Incorrect username or password."
-        );
+            console.error("Login error:", error);
 
-        return;
+            toast("Incorrect username or password.");
+
+            return;
+        }
+
+
+        console.log("Login successful:", data.user);
+
+        currentUser = data.user;
+
+        await initializeApp();
+
+    } catch (error) {
+
+        console.error("Login exception:", error);
+
+        toast("Login failed.");
+
+    } finally {
+
+        setAuthButtonsDisabled(false);
     }
+}
 
 
-    currentUser =
-        data.user;
+/* =========================================================
+   AUTH BUTTON STATE
+========================================================= */
 
-    await initializeApp();
+function setAuthButtonsDisabled(disabled) {
+
+    const loginButton =
+        document.getElementById("loginButton");
+
+    const signupButton =
+        document.getElementById("signupButton");
+
+    if (loginButton)
+        loginButton.disabled = disabled;
+
+    if (signupButton)
+        signupButton.disabled = disabled;
 }
 
 
@@ -311,11 +352,21 @@ async function login() {
 
 async function logout() {
 
-    await supabaseClient..auth.signOut();
+    try {
+
+        await supabase.auth.signOut();
+
+    } catch (error) {
+
+        console.error(error);
+
+    }
 
     stopTimerInterval();
 
     currentUser = null;
+
+    currentProfile = null;
 
     showAuth();
 }
@@ -360,31 +411,31 @@ async function initializeApp() {
 
 async function loadProfile() {
 
+    if (!currentUser)
+        return;
+
+
     const {
         data,
         error
-    } =
-        await supabaseClient.
-            .from("profiles")
-            .select("*")
-            .eq("id", currentUser.id)
-            .single();
+    } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", currentUser.id)
+        .single();
 
 
     if (error) {
 
-        console.error(error);
+        console.error("Profile error:", error);
 
-        toast(
-            "Could not load your profile."
-        );
+        toast("Could not load your profile.");
 
         return;
     }
 
 
-    currentProfile =
-        data;
+    currentProfile = data;
 }
 
 
@@ -413,29 +464,33 @@ function updateHeader() {
 
 async function loadSessions() {
 
+    if (!currentUser)
+        return;
+
+
     const {
         data,
         error
-    } =
-        await supabaseClient.
-            .from("study_sessions")
-            .select("*")
-            .eq("user_id", currentUser.id)
-            .order("start_time", {
-                ascending: false
-            });
+    } = await supabase
+        .from("study_sessions")
+        .select("*")
+        .eq("user_id", currentUser.id)
+        .order("start_time", {
+            ascending: false
+        });
 
 
     if (error) {
 
-        console.error(error);
+        console.error("Sessions error:", error);
+
+        sessions = [];
 
         return;
     }
 
 
-    sessions =
-        data || [];
+    sessions = data || [];
 }
 
 
@@ -445,29 +500,33 @@ async function loadSessions() {
 
 async function loadReviews() {
 
+    if (!currentUser)
+        return;
+
+
     const {
         data,
         error
-    } =
-        await supabaseClient.
-            .from("review_items")
-            .select("*")
-            .eq("user_id", currentUser.id)
-            .order("due_at", {
-                ascending: true
-            });
+    } = await supabase
+        .from("review_items")
+        .select("*")
+        .eq("user_id", currentUser.id)
+        .order("due_at", {
+            ascending: true
+        });
 
 
     if (error) {
 
-        console.error(error);
+        console.error("Reviews error:", error);
+
+        reviews = [];
 
         return;
     }
 
 
-    reviews =
-        data || [];
+    reviews = data || [];
 }
 
 
@@ -477,14 +536,26 @@ async function loadReviews() {
 
 async function loadGoals() {
 
+    if (!currentUser)
+        return;
+
+
     const {
-        data
-    } =
-        await supabaseClient.
-            .from("study_goals")
-            .select("*")
-            .eq("user_id", currentUser.id)
-            .single();
+        data,
+        error
+    } = await supabase
+        .from("study_goals")
+        .select("*")
+        .eq("user_id", currentUser.id)
+        .single();
+
+
+    if (error) {
+
+        console.error("Goals error:", error);
+
+        return;
+    }
 
 
     if (!data)
@@ -520,18 +591,11 @@ async function loadGoals() {
    TIMER STORAGE
 ========================================================= */
 
-const TIMER_STORAGE_KEY =
-    "studytrack_active_timer";
-
-
 function saveTimerState() {
 
     localStorage.setItem(
-
         TIMER_STORAGE_KEY,
-
         JSON.stringify(timerState)
-
     );
 }
 
@@ -544,7 +608,7 @@ function clearTimerState() {
 }
 
 
-async function restoreTimer() {
+function restoreTimer() {
 
     const raw =
         localStorage.getItem(
@@ -558,8 +622,7 @@ async function restoreTimer() {
 
     try {
 
-        timerState =
-            JSON.parse(raw);
+        timerState = JSON.parse(raw);
 
     } catch {
 
@@ -580,13 +643,15 @@ async function restoreTimer() {
 
 
 /* =========================================================
-   TIMER CALCULATION
+   TIMER
 ========================================================= */
 
 function getTimerSeconds() {
 
     let seconds =
-        timerState.accumulatedSeconds || 0;
+        Number(
+            timerState.accumulatedSeconds || 0
+        );
 
 
     if (
@@ -605,51 +670,35 @@ function getTimerSeconds() {
     }
 
 
-    return Math.max(
-        0,
-        seconds
-    );
+    return Math.max(0, seconds);
 }
 
 
 function formatDuration(seconds) {
 
-    seconds =
-        Math.max(
-            0,
-            Math.floor(seconds)
-        );
+    seconds = Math.max(
+        0,
+        Math.floor(seconds)
+    );
 
 
     const hours =
-        Math.floor(
-            seconds / 3600
-        );
-
+        Math.floor(seconds / 3600);
 
     const minutes =
         Math.floor(
             (seconds % 3600) / 60
         );
 
-
     const secs =
         seconds % 60;
 
 
-    if (hours > 0) {
-
+    if (hours > 0)
         return `${hours}h ${minutes}m`;
 
-    }
-
-
-    if (minutes > 0) {
-
+    if (minutes > 0)
         return `${minutes}m ${secs}s`;
-
-    }
-
 
     return `${secs}s`;
 }
@@ -665,38 +714,26 @@ function formatTimer(seconds) {
 
 
     const h =
-        Math.floor(
-            seconds / 3600
-        );
-
+        Math.floor(seconds / 3600);
 
     const m =
         Math.floor(
             (seconds % 3600) / 60
         );
 
-
     const s =
         seconds % 60;
 
 
-    return [
-        h,
-        m,
-        s
-    ]
+    return [h, m, s]
         .map(
-            x =>
-                String(x)
+            value =>
+                String(value)
                     .padStart(2, "0")
         )
         .join(":");
 }
 
-
-/* =========================================================
-   START TIMER
-========================================================= */
 
 function startTimer() {
 
@@ -705,16 +742,10 @@ function startTimer() {
 
 
     timerState = {
-
         running: true,
-
         paused: false,
-
-        startedAt:
-            Date.now(),
-
-        accumulatedSeconds:
-            0
+        startedAt: Date.now(),
+        accumulatedSeconds: 0
     };
 
 
@@ -724,15 +755,9 @@ function startTimer() {
 
     restoreTimerUI();
 
-    toast(
-        "Study session started."
-    );
+    toast("Study session started.");
 }
 
-
-/* =========================================================
-   PAUSE
-========================================================= */
 
 function pauseTimer() {
 
@@ -746,14 +771,9 @@ function pauseTimer() {
     timerState.accumulatedSeconds =
         getTimerSeconds();
 
+    timerState.paused = true;
 
-    timerState.paused =
-        true;
-
-
-    timerState.startedAt =
-        null;
-
+    timerState.startedAt = null;
 
     saveTimerState();
 
@@ -762,10 +782,6 @@ function pauseTimer() {
     restoreTimerUI();
 }
 
-
-/* =========================================================
-   RESUME
-========================================================= */
 
 function resumeTimer() {
 
@@ -776,13 +792,9 @@ function resumeTimer() {
         return;
 
 
-    timerState.paused =
-        false;
+    timerState.paused = false;
 
-
-    timerState.startedAt =
-        Date.now();
-
+    timerState.startedAt = Date.now();
 
     saveTimerState();
 
@@ -791,10 +803,6 @@ function resumeTimer() {
     restoreTimerUI();
 }
 
-
-/* =========================================================
-   STOP
-========================================================= */
 
 async function stopTimer() {
 
@@ -811,18 +819,21 @@ async function stopTimer() {
         clearTimerState();
 
         timerState = {
-
             running: false,
-
             paused: false,
-
             startedAt: null,
-
             accumulatedSeconds: 0
         };
 
-
         restoreTimerUI();
+
+        return;
+    }
+
+
+    if (!currentUser) {
+
+        toast("You must be logged in.");
 
         return;
     }
@@ -856,39 +867,25 @@ async function stopTimer() {
     const {
         data,
         error
-    } =
-        await supabaseClient.
-            .from("study_sessions")
-            .insert({
-
-                user_id:
-                    currentUser.id,
-
-                start_time:
-                    startTime,
-
-                end_time:
-                    endTime,
-
-                duration_seconds:
-                    duration,
-
-                subject,
-
-                notes
-
-            })
-            .select()
-            .single();
+    } = await supabase
+        .from("study_sessions")
+        .insert({
+            user_id: currentUser.id,
+            start_time: startTime,
+            end_time: endTime,
+            duration_seconds: duration,
+            subject,
+            notes
+        })
+        .select()
+        .single();
 
 
     if (error) {
 
         console.error(error);
 
-        toast(
-            "Could not save the study session."
-        );
+        toast("Could not save the study session.");
 
         return;
     }
@@ -896,18 +893,13 @@ async function stopTimer() {
 
     sessions.unshift(data);
 
-
     clearTimerState();
 
 
     timerState = {
-
         running: false,
-
         paused: false,
-
         startedAt: null,
-
         accumulatedSeconds: 0
     };
 
@@ -919,7 +911,6 @@ async function stopTimer() {
         .getElementById("sessionSubject")
         .value = "";
 
-
     document
         .getElementById("sessionNotes")
         .value = "";
@@ -928,7 +919,6 @@ async function stopTimer() {
     restoreTimerUI();
 
     renderDashboard();
-
 
     toast(
         `Saved ${formatDuration(duration)} of study time.`
@@ -944,13 +934,11 @@ function startTimerInterval() {
 
     stopTimerInterval();
 
-
     timerInterval =
         setInterval(
             updateTimerDisplay,
             500
         );
-
 
     updateTimerDisplay();
 }
@@ -960,9 +948,7 @@ function stopTimerInterval() {
 
     if (timerInterval) {
 
-        clearInterval(
-            timerInterval
-        );
+        clearInterval(timerInterval);
 
         timerInterval = null;
     }
@@ -971,9 +957,14 @@ function stopTimerInterval() {
 
 function updateTimerDisplay() {
 
-    document
-        .getElementById("timer")
-        .textContent =
+    const timer =
+        document.getElementById("timer");
+
+    if (!timer)
+        return;
+
+
+    timer.textContent =
         formatTimer(
             getTimerSeconds()
         );
@@ -987,56 +978,36 @@ function updateTimerDisplay() {
 function restoreTimerUI() {
 
     const start =
-        document.getElementById(
-            "startButton"
-        );
+        document.getElementById("startButton");
 
     const pause =
-        document.getElementById(
-            "pauseButton"
-        );
+        document.getElementById("pauseButton");
 
     const resume =
-        document.getElementById(
-            "resumeButton"
-        );
+        document.getElementById("resumeButton");
 
     const stop =
-        document.getElementById(
-            "stopButton"
-        );
+        document.getElementById("stopButton");
 
     const status =
-        document.getElementById(
-            "timerStatus"
-        );
+        document.getElementById("timerStatus");
 
 
-    start.classList.add(
-        "hidden"
-    );
+    if (!start)
+        return;
 
-    pause.classList.add(
-        "hidden"
-    );
 
-    resume.classList.add(
-        "hidden"
-    );
-
-    stop.classList.add(
-        "hidden"
-    );
+    start.classList.add("hidden");
+    pause.classList.add("hidden");
+    resume.classList.add("hidden");
+    stop.classList.add("hidden");
 
 
     if (!timerState.running) {
 
-        start.classList.remove(
-            "hidden"
-        );
+        start.classList.remove("hidden");
 
-        status.textContent =
-            "Ready";
+        status.textContent = "Ready";
 
         updateTimerDisplay();
 
@@ -1044,28 +1015,20 @@ function restoreTimerUI() {
     }
 
 
-    stop.classList.remove(
-        "hidden"
-    );
+    stop.classList.remove("hidden");
 
 
     if (timerState.paused) {
 
-        resume.classList.remove(
-            "hidden"
-        );
+        resume.classList.remove("hidden");
 
-        status.textContent =
-            "Paused";
+        status.textContent = "Paused";
 
     } else {
 
-        pause.classList.remove(
-            "hidden"
-        );
+        pause.classList.remove("hidden");
 
-        status.textContent =
-            "Studying";
+        status.textContent = "Studying";
     }
 
 
@@ -1079,14 +1042,15 @@ function restoreTimerUI() {
 
 function setDateText() {
 
-    const date =
-        new Date();
+    const element =
+        document.getElementById("dateText");
+
+    if (!element)
+        return;
 
 
-    document
-        .getElementById("dateText")
-        .textContent =
-        date.toLocaleDateString(
+    element.textContent =
+        new Date().toLocaleDateString(
             undefined,
             {
                 weekday: "long",
@@ -1108,16 +1072,10 @@ function startOfDay(date = new Date()) {
 }
 
 
-function totalBetween(
-    from,
-    to
-) {
+function totalBetween(from, to) {
 
     return sessions.reduce(
-        (
-            total,
-            session
-        ) => {
+        (total, session) => {
 
             const start =
                 new Date(
@@ -1131,7 +1089,9 @@ function totalBetween(
             ) {
 
                 return total +
-                    session.duration_seconds;
+                    Number(
+                        session.duration_seconds || 0
+                    );
             }
 
 
@@ -1148,12 +1108,8 @@ function todaySeconds() {
     const from =
         startOfDay();
 
-
     const to =
-        new Date(
-            from
-        );
-
+        new Date(from);
 
     to.setDate(
         to.getDate() + 1
@@ -1172,12 +1128,8 @@ function renderDashboard() {
     const today =
         todaySeconds();
 
-
     const week =
-        totalLastDays(
-            7
-        );
-
+        totalLastDays(7);
 
     const month =
         totalCurrentMonth();
@@ -1204,8 +1156,7 @@ function renderDashboard() {
     document
         .getElementById("streak")
         .textContent =
-        calculateStreak()
-        + " days";
+        calculateStreak() + " days";
 
 
     renderTimeline();
@@ -1216,20 +1167,13 @@ function renderDashboard() {
 }
 
 
-/* =========================================================
-   PERIOD CALCULATIONS
-========================================================= */
-
 function totalLastDays(days) {
 
     const now =
         new Date();
 
-
     const from =
-        new Date(
-            now
-        );
+        new Date(now);
 
 
     from.setDate(
@@ -1247,10 +1191,7 @@ function totalLastDays(days) {
 
 
     return sessions.reduce(
-        (
-            total,
-            session
-        ) => {
+        (total, session) => {
 
             const start =
                 new Date(
@@ -1264,7 +1205,9 @@ function totalLastDays(days) {
             ) {
 
                 return total +
-                    session.duration_seconds;
+                    Number(
+                        session.duration_seconds || 0
+                    );
             }
 
 
@@ -1280,7 +1223,6 @@ function totalCurrentMonth() {
 
     const now =
         new Date();
-
 
     const from =
         new Date(
@@ -1309,20 +1251,17 @@ function calculateStreak() {
         new Set();
 
 
-    sessions.forEach(
-        session => {
+    sessions.forEach(session => {
 
-            const d =
-                new Date(
-                    session.start_time
-                );
-
-
-            studiedDays.add(
-                d.toDateString()
+        const date =
+            new Date(
+                session.start_time
             );
-        }
-    );
+
+        studiedDays.add(
+            date.toDateString()
+        );
+    });
 
 
     let streak = 0;
@@ -1356,19 +1295,17 @@ function calculateStreak() {
 function renderTimeline() {
 
     const container =
-        document.getElementById(
-            "timeline"
-        );
+        document.getElementById("timeline");
+
+    if (!container)
+        return;
 
 
     const today =
         startOfDay();
 
-
     const tomorrow =
-        new Date(
-            today
-        );
+        new Date(today);
 
 
     tomorrow.setDate(
@@ -1378,31 +1315,22 @@ function renderTimeline() {
 
     const list =
         sessions
-            .filter(
-                session => {
+            .filter(session => {
 
-                    const date =
-                        new Date(
-                            session.start_time
-                        );
-
-                    return (
-                        date >= today &&
-                        date < tomorrow
+                const date =
+                    new Date(
+                        session.start_time
                     );
-                }
-            )
+
+                return (
+                    date >= today &&
+                    date < tomorrow
+                );
+            })
             .sort(
-                (
-                    a,
-                    b
-                ) =>
-                    new Date(
-                        a.start_time
-                    ) -
-                    new Date(
-                        b.start_time
-                    )
+                (a, b) =>
+                    new Date(a.start_time) -
+                    new Date(b.start_time)
             );
 
 
@@ -1418,82 +1346,66 @@ function renderTimeline() {
 
 
     container.innerHTML =
-        list.map(
-            session => {
+        list.map(session => {
 
-                const start =
-                    new Date(
-                        session.start_time
-                    );
+            const start =
+                new Date(
+                    session.start_time
+                );
 
-
-                const end =
-                    new Date(
-                        session.end_time
-                    );
+            const end =
+                new Date(
+                    session.end_time
+                );
 
 
-                return `
+            return `
+                <div class="timeline-item">
 
-                    <div class="timeline-item">
+                    <div class="timeline-dot"></div>
 
-                        <div class="timeline-dot"></div>
+                    <div class="timeline-content">
 
-                        <div class="timeline-content">
+                        <div class="timeline-title">
+                            ${escapeHTML(
+                                session.subject ||
+                                "Study session"
+                            )}
+                        </div>
 
-                            <div class="timeline-title">
+                        <div class="timeline-meta">
+                            ${formatClock(start)}
+                            →
+                            ${formatClock(end)}
+                            ·
+                            ${formatDuration(
+                                session.duration_seconds
+                            )}
+                        </div>
 
-                                ${
-                                    escapeHTML(
-                                        session.subject ||
-                                        "Study session"
-                                    )
-                                }
-
-                            </div>
-
-                            <div class="timeline-meta">
-
-                                ${formatClock(start)}
-                                →
-                                ${formatClock(end)}
-
-                                ·
-
-                                ${formatDuration(
-                                    session.duration_seconds
-                                )}
-
-                            </div>
-
-                            ${
-                                session.notes
-                                ?
-                                `
+                        ${
+                            session.notes
+                            ? `
                                 <div class="timeline-meta">
-
                                     ${escapeHTML(
                                         session.notes
                                     )}
-
                                 </div>
-                                `
-                                :
-                                ""
-                            }
-
-                        </div>
+                            `
+                            : ""
+                        }
 
                     </div>
-                `;
-            }
-        )
-        .join("");
+
+                </div>
+            `;
+
+        }).join("");
 }
 
 
 /* =========================================================
-   WEEK CHART
+   CHARTS
 ========================================================= */
 
 function drawWeekChart() {
@@ -1505,52 +1417,41 @@ function drawWeekChart() {
 }
 
 
-function drawBarChart(
-    canvasId,
-    days
-) {
+function drawBarChart(canvasId, days) {
 
     const canvas =
-        document.getElementById(
-            canvasId
-        );
-
+        document.getElementById(canvasId);
 
     if (!canvas)
         return;
 
 
     const ctx =
-        canvas.getContext(
-            "2d"
-        );
-
+        canvas.getContext("2d");
 
     const width =
-        canvas.clientWidth ||
-        600;
+        canvas.clientWidth || 600;
 
-
-    const height =
-        280;
-
+    const height = 280;
 
     const ratio =
-        window.devicePixelRatio ||
-        1;
+        window.devicePixelRatio || 1;
 
 
     canvas.width =
         width * ratio;
 
-
     canvas.height =
         height * ratio;
 
 
-    ctx.scale(
+    ctx.setTransform(
         ratio,
-        ratio
+        0,
+        0,
+        ratio,
+        0,
+        0
     );
 
 
@@ -1566,17 +1467,13 @@ function drawBarChart(
         const date =
             startOfDay();
 
-
         date.setDate(
             date.getDate() - i
         );
 
 
         const next =
-            new Date(
-                date
-            );
-
+            new Date(date);
 
         next.setDate(
             next.getDate() + 1
@@ -1617,27 +1514,23 @@ function drawBarChart(
 
 
     values.forEach(
-        (
-            value,
-            index
-        ) => {
+        (value, index) => {
+
+            const slotWidth =
+                chartWidth /
+                values.length;
+
 
             const barWidth =
-                chartWidth /
-                values.length *
-                .55;
+                slotWidth * 0.55;
 
 
             const x =
                 padding +
                 (
-                    index +
-                    .5
+                    index + 0.5
                 ) *
-                (
-                    chartWidth /
-                    values.length
-                ) -
+                slotWidth -
                 barWidth / 2;
 
 
@@ -1669,7 +1562,6 @@ function drawBarChart(
                 "#8179ff"
             );
 
-
             gradient.addColorStop(
                 1,
                 "#4039a8"
@@ -1682,20 +1574,40 @@ function drawBarChart(
 
             ctx.beginPath();
 
-            ctx.roundRect(
-                x,
-                y,
-                barWidth,
-                barHeight,
-                6
-            );
+            if (
+                typeof ctx.roundRect ===
+                "function"
+            ) {
+
+                ctx.roundRect(
+                    x,
+                    y,
+                    barWidth,
+                    Math.max(
+                        2,
+                        barHeight
+                    ),
+                    6
+                );
+
+            } else {
+
+                ctx.rect(
+                    x,
+                    y,
+                    barWidth,
+                    Math.max(
+                        2,
+                        barHeight
+                    )
+                );
+            }
 
             ctx.fill();
 
 
             const date =
                 new Date();
-
 
             date.setDate(
                 date.getDate() -
@@ -1710,10 +1622,8 @@ function drawBarChart(
             ctx.fillStyle =
                 "#8d98b5";
 
-
             ctx.font =
                 "12px sans-serif";
-
 
             ctx.textAlign =
                 "center";
@@ -1741,26 +1651,25 @@ function drawBarChart(
 function renderHistory() {
 
     const container =
-        document.getElementById(
-            "historyList"
-        );
+        document.getElementById("historyList");
+
+    if (!container)
+        return;
 
 
     const search =
-        document
-            .getElementById(
-                "historySearch"
-            )
-            .value
-            .toLowerCase()
-            .trim();
+        (
+            document
+                .getElementById("historySearch")
+                .value || ""
+        )
+        .toLowerCase()
+        .trim();
 
 
     const period =
         document
-            .getElementById(
-                "historyPeriod"
-            )
+            .getElementById("historyPeriod")
             .value;
 
 
@@ -1768,149 +1677,127 @@ function renderHistory() {
         new Date();
 
 
-    let list =
-        sessions.filter(
-            session => {
+    const list =
+        sessions.filter(session => {
 
-                const text =
-                    (
-                        session.subject ||
-                        ""
-                    )
-                    .toLowerCase()
-                    +
-                    " "
-                    +
-                    (
-                        session.notes ||
-                        ""
-                    )
-                    .toLowerCase();
+            const text =
+                (
+                    session.subject ||
+                    ""
+                ).toLowerCase()
+                +
+                " "
+                +
+                (
+                    session.notes ||
+                    ""
+                ).toLowerCase();
+
+
+            if (
+                search &&
+                !text.includes(search)
+            ) {
+
+                return false;
+            }
+
+
+            if (
+                period !== "all"
+            ) {
+
+                const from =
+                    new Date(now);
+
+                from.setDate(
+                    from.getDate() -
+                    Number(period)
+                );
 
 
                 if (
-                    search &&
-                    !text.includes(
-                        search
-                    )
+                    new Date(
+                        session.start_time
+                    ) < from
                 ) {
 
                     return false;
                 }
-
-
-                if (
-                    period !== "all"
-                ) {
-
-                    const from =
-                        new Date(
-                            now
-                        );
-
-
-                    from.setDate(
-                        from.getDate() -
-                        Number(period)
-                    );
-
-
-                    if (
-                        new Date(
-                            session.start_time
-                        ) < from
-                    ) {
-
-                        return false;
-                    }
-                }
-
-
-                return true;
             }
-        );
+
+
+            return true;
+
+        });
 
 
     if (!list.length) {
 
         container.innerHTML =
-            `<p>
-                No study sessions found.
-            </p>`;
+            "<p>No study sessions found.</p>";
 
         return;
     }
 
 
     container.innerHTML =
-        list.map(
-            session => {
+        list.map(session => {
 
-                const start =
-                    new Date(
-                        session.start_time
-                    );
+            const start =
+                new Date(
+                    session.start_time
+                );
 
 
-                return `
+            return `
+                <div class="session-row">
 
-                    <div class="session-row">
+                    <div class="session-time">
 
-                        <div class="session-time">
+                        ${start.toLocaleDateString()}
 
-                            ${start.toLocaleDateString()}
+                        <br>
 
-                            <br>
-
-                            ${formatClock(start)}
-
-                        </div>
-
-                        <div>
-
-                            <div class="session-subject">
-
-                                ${
-                                    escapeHTML(
-                                        session.subject ||
-                                        "Study session"
-                                    )
-                                }
-
-                            </div>
-
-                            ${
-                                session.notes
-                                ?
-                                `
-                                <div class="session-notes">
-
-                                    ${escapeHTML(
-                                        session.notes
-                                    )}
-
-                                </div>
-                                `
-                                :
-                                ""
-                            }
-
-                        </div>
-
-                        <div class="session-duration">
-
-                            ${formatDuration(
-                                session.duration_seconds
-                            )}
-
-                        </div>
+                        ${formatClock(start)}
 
                     </div>
 
-                `;
-            }
-        )
-        .join("");
+                    <div>
+
+                        <div class="session-subject">
+                            ${escapeHTML(
+                                session.subject ||
+                                "Study session"
+                            )}
+                        </div>
+
+                        ${
+                            session.notes
+                            ? `
+                                <div class="session-notes">
+                                    ${escapeHTML(
+                                        session.notes
+                                    )}
+                                </div>
+                            `
+                            : ""
+                        }
+
+                    </div>
+
+                    <div class="session-duration">
+
+                        ${formatDuration(
+                            session.duration_seconds
+                        )}
+
+                    </div>
+
+                </div>
+            `;
+
+        }).join("");
 }
 
 
@@ -1920,8 +1807,7 @@ function renderHistory() {
 
 function setAnalyticsRange(days) {
 
-    analyticsRange =
-        days;
+    analyticsRange = days;
 
     renderAnalytics();
 }
@@ -1931,10 +1817,6 @@ function renderAnalytics() {
 
     const days =
         analyticsRange;
-
-
-    const now =
-        new Date();
 
 
     const from =
@@ -1958,12 +1840,11 @@ function renderAnalytics() {
 
     const total =
         relevant.reduce(
-            (
-                sum,
-                s
-            ) =>
+            (sum, session) =>
                 sum +
-                s.duration_seconds,
+                Number(
+                    session.duration_seconds || 0
+                ),
             0
         );
 
@@ -1972,48 +1853,38 @@ function renderAnalytics() {
         Math.max(
             0,
             ...relevant.map(
-                s =>
-                    s.duration_seconds
+                session =>
+                    Number(
+                        session.duration_seconds || 0
+                    )
             )
         );
 
 
     document
-        .getElementById(
-            "analyticsTotal"
-        )
+        .getElementById("analyticsTotal")
         .textContent =
         formatDuration(total);
 
 
     document
-        .getElementById(
-            "analyticsAverage"
-        )
+        .getElementById("analyticsAverage")
         .textContent =
         formatDuration(
-            days
-                ? total / days
-                : 0
+            days ? total / days : 0
         );
 
 
     document
-        .getElementById(
-            "analyticsSessions"
-        )
+        .getElementById("analyticsSessions")
         .textContent =
         relevant.length;
 
 
     document
-        .getElementById(
-            "analyticsLongest"
-        )
+        .getElementById("analyticsLongest")
         .textContent =
-        formatDuration(
-            longest
-        );
+        formatDuration(longest);
 
 
     drawBarChart(
@@ -2022,59 +1893,46 @@ function renderAnalytics() {
     );
 
 
-    renderSubjectStats(
-        relevant
-    );
-
+    renderSubjectStats(relevant);
 
     renderHeatmap();
 }
 
 
-function renderSubjectStats(
-    relevant
-) {
+function renderSubjectStats(relevant) {
 
     const map = {};
 
 
-    relevant.forEach(
-        session => {
+    relevant.forEach(session => {
 
-            const subject =
-                session.subject ||
-                "Unspecified";
+        const subject =
+            session.subject ||
+            "Unspecified";
 
 
-            map[subject] =
-                (
-                    map[subject] ||
-                    0
-                )
-                +
-                session.duration_seconds;
-        }
-    );
+        map[subject] =
+            (
+                map[subject] || 0
+            ) +
+            Number(
+                session.duration_seconds || 0
+            );
+    });
 
 
     const entries =
-        Object.entries(
-            map
-        )
-        .sort(
-            (
-                a,
-                b
-            ) =>
-                b[1] -
-                a[1]
-        );
+        Object.entries(map)
+            .sort(
+                (a, b) =>
+                    b[1] - a[1]
+            );
 
 
     const max =
         Math.max(
             ...entries.map(
-                x => x[1]
+                entry => entry[1]
             ),
             1
         );
@@ -2097,9 +1955,7 @@ function renderSubjectStats(
 
     container.innerHTML =
         entries.map(
-            (
-                [name, seconds]
-            ) => `
+            ([name, seconds]) => `
 
                 <div class="subject-row">
 
@@ -2114,13 +1970,12 @@ function renderSubjectStats(
                             <div
                                 class="subject-fill"
                                 style="
-                                    width:
-                                    ${
+                                    width: ${
                                         (
                                             seconds /
                                             max
                                         ) * 100
-                                    }%
+                                    }%;
                                 "
                             ></div>
 
@@ -2133,9 +1988,9 @@ function renderSubjectStats(
                     </strong>
 
                 </div>
+
             `
-        )
-        .join("");
+        ).join("");
 }
 
 
@@ -2146,9 +2001,10 @@ function renderSubjectStats(
 function renderHeatmap() {
 
     const container =
-        document.getElementById(
-            "heatmap"
-        );
+        document.getElementById("heatmap");
+
+    if (!container)
+        return;
 
 
     const today =
@@ -2165,21 +2021,16 @@ function renderHeatmap() {
     ) {
 
         const date =
-            new Date(
-                today
-            );
+            new Date(today);
 
 
         date.setDate(
-            date.getDate() -
-            i
+            date.getDate() - i
         );
 
 
         const next =
-            new Date(
-                date
-            );
+            new Date(date);
 
 
         next.setDate(
@@ -2200,36 +2051,26 @@ function renderHeatmap() {
         if (seconds > 0)
             level = 1;
 
-
         if (seconds >= 1800)
             level = 2;
 
-
         if (seconds >= 7200)
             level = 3;
-
 
         if (seconds >= 14400)
             level = 4;
 
 
         html += `
-
             <div
                 class="heat-cell heat-${level}"
-                title="
-                    ${date.toLocaleDateString()}
-                    —
-                    ${formatDuration(seconds)}
-                "
+                title="${date.toLocaleDateString()} — ${formatDuration(seconds)}"
             ></div>
-
         `;
     }
 
 
-    container.innerHTML =
-        html;
+    container.innerHTML = html;
 }
 
 
@@ -2240,24 +2081,16 @@ function renderHeatmap() {
 function openReviewModal() {
 
     document
-        .getElementById(
-            "reviewModal"
-        )
-        .classList.remove(
-            "hidden"
-        );
+        .getElementById("reviewModal")
+        .classList.remove("hidden");
 }
 
 
 function closeReviewModal() {
 
     document
-        .getElementById(
-            "reviewModal"
-        )
-        .classList.add(
-            "hidden"
-        );
+        .getElementById("reviewModal")
+        .classList.add("hidden");
 }
 
 
@@ -2265,36 +2098,28 @@ async function addReviewItem() {
 
     const subject =
         document
-            .getElementById(
-                "reviewSubject"
-            )
+            .getElementById("reviewSubject")
             .value
             .trim();
 
 
     const topic =
         document
-            .getElementById(
-                "reviewTopic"
-            )
+            .getElementById("reviewTopic")
             .value
             .trim();
 
 
     const notes =
         document
-            .getElementById(
-                "reviewNotes"
-            )
+            .getElementById("reviewNotes")
             .value
             .trim();
 
 
     if (!topic) {
 
-        toast(
-            "Enter a topic."
-        );
+        toast("Enter a topic.");
 
         return;
     }
@@ -2303,35 +2128,24 @@ async function addReviewItem() {
     const {
         data,
         error
-    } =
-        await supabaseClient.
-            .from("review_items")
-            .insert({
-
-                user_id:
-                    currentUser.id,
-
-                subject:
-                    subject || null,
-
-                topic,
-
-                notes:
-                    notes || null,
-
-                due_at:
-                    new Date()
-                        .toISOString()
-            })
-            .select()
-            .single();
+    } = await supabase
+        .from("review_items")
+        .insert({
+            user_id: currentUser.id,
+            subject: subject || null,
+            topic,
+            notes: notes || null,
+            due_at: new Date().toISOString()
+        })
+        .select()
+        .single();
 
 
     if (error) {
 
-        toast(
-            error.message
-        );
+        console.error(error);
+
+        toast(error.message);
 
         return;
     }
@@ -2341,23 +2155,15 @@ async function addReviewItem() {
 
 
     document
-        .getElementById(
-            "reviewSubject"
-        )
+        .getElementById("reviewSubject")
         .value = "";
 
-
     document
-        .getElementById(
-            "reviewTopic"
-        )
+        .getElementById("reviewTopic")
         .value = "";
 
-
     document
-        .getElementById(
-            "reviewNotes"
-        )
+        .getElementById("reviewNotes")
         .value = "";
 
 
@@ -2365,20 +2171,15 @@ async function addReviewItem() {
 
     renderReviews();
 
-    toast(
-        "Revision topic added."
-    );
+    toast("Revision topic added.");
 }
 
 
 /* =========================================================
-   SPACED REPETITION ALGORITHM
+   SPACED REPETITION
 ========================================================= */
 
-async function reviewItem(
-    id,
-    rating
-) {
+async function reviewItem(id, rating) {
 
     const item =
         reviews.find(
@@ -2392,33 +2193,20 @@ async function reviewItem(
 
     let ease =
         Number(
-            item.ease_factor ||
-            2.5
+            item.ease_factor || 2.5
         );
 
 
     let repetitions =
         Number(
-            item.repetitions ||
-            0
+            item.repetitions || 0
         );
 
 
     let interval =
         Number(
-            item.interval_days ||
-            0
+            item.interval_days || 0
         );
-
-
-    /*
-       Simplified SM-2 style algorithm.
-
-       Again = reset
-       Hard  = small increase
-       Good  = normal increase
-       Easy  = large increase
-    */
 
 
     if (rating === "again") {
@@ -2439,17 +2227,15 @@ async function reviewItem(
 
         repetitions++;
 
-        if (interval < 1)
-            interval = 1;
-        else
-            interval =
-                Math.max(
-                    1,
-                    Math.round(
-                        interval *
-                        1.2
-                    )
-                );
+        interval =
+            interval < 1
+            ? 1
+            : Math.max(
+                1,
+                Math.round(
+                    interval * 1.2
+                )
+            );
 
         ease =
             Math.max(
@@ -2475,8 +2261,7 @@ async function reviewItem(
 
             interval =
                 Math.round(
-                    interval *
-                    ease
+                    interval * ease
                 );
         }
     }
@@ -2517,41 +2302,27 @@ async function reviewItem(
     const {
         data,
         error
-    } =
-        await supabaseClient.
-            .from("review_items")
-            .update({
-
-                due_at:
-                    nextDate.toISOString(),
-
-                last_reviewed_at:
-                    new Date().toISOString(),
-
-                interval_days:
-                    interval,
-
-                repetitions,
-
-                ease_factor:
-                    Number(
-                        ease.toFixed(2)
-                    )
-
-            })
-            .eq(
-                "id",
-                id
-            )
-            .select()
-            .single();
+    } = await supabase
+        .from("review_items")
+        .update({
+            due_at: nextDate.toISOString(),
+            last_reviewed_at:
+                new Date().toISOString(),
+            interval_days: interval,
+            repetitions,
+            ease_factor:
+                Number(
+                    ease.toFixed(2)
+                )
+        })
+        .eq("id", id)
+        .select()
+        .single();
 
 
     if (error) {
 
-        toast(
-            error.message
-        );
+        toast(error.message);
 
         return;
     }
@@ -2563,8 +2334,7 @@ async function reviewItem(
         );
 
 
-    reviews[index] =
-        data;
+    reviews[index] = data;
 
 
     renderReviews();
@@ -2582,28 +2352,16 @@ async function reviewItem(
    REVIEW RENDER
 ========================================================= */
 
-function reviewStatus(
-    item
-) {
-
-    const now =
-        new Date();
-
+function reviewStatus(item) {
 
     const due =
-        new Date(
-            item.due_at
-        );
-
+        new Date(item.due_at);
 
     const today =
         startOfDay();
 
-
     const tomorrow =
-        new Date(
-            today
-        );
+        new Date(today);
 
 
     tomorrow.setDate(
@@ -2614,10 +2372,8 @@ function reviewStatus(
     if (due < today)
         return "overdue";
 
-
     if (due < tomorrow)
         return "today";
-
 
     return "upcoming";
 }
@@ -2626,9 +2382,10 @@ function reviewStatus(
 function renderReviews() {
 
     const container =
-        document.getElementById(
-            "reviewList"
-        );
+        document.getElementById("reviewList");
+
+    if (!container)
+        return;
 
 
     let overdue = 0;
@@ -2636,57 +2393,36 @@ function renderReviews() {
     let upcoming = 0;
 
 
-    reviews.forEach(
-        item => {
+    reviews.forEach(item => {
 
-            const status =
-                reviewStatus(
-                    item
-                );
+        const status =
+            reviewStatus(item);
 
 
-            if (
-                status === "overdue"
-            )
-                overdue++;
+        if (status === "overdue")
+            overdue++;
 
+        if (status === "today")
+            today++;
 
-            if (
-                status === "today"
-            )
-                today++;
-
-
-            if (
-                status === "upcoming"
-            )
-                upcoming++;
-        }
-    );
+        if (status === "upcoming")
+            upcoming++;
+    });
 
 
     document
-        .getElementById(
-            "overdueCount"
-        )
-        .textContent =
-        overdue;
+        .getElementById("overdueCount")
+        .textContent = overdue;
 
 
     document
-        .getElementById(
-            "dueTodayCount"
-        )
-        .textContent =
-        today;
+        .getElementById("dueTodayCount")
+        .textContent = today;
 
 
     document
-        .getElementById(
-            "upcomingCount"
-        )
-        .textContent =
-        upcoming;
+        .getElementById("upcomingCount")
+        .textContent = upcoming;
 
 
     const due =
@@ -2709,106 +2445,70 @@ function renderReviews() {
 
 
     container.innerHTML =
-        due.map(
-            item => `
+        due.map(item => `
 
-                <div class="review-row">
+            <div class="review-row">
 
-                    <div>
+                <div>
 
-                        <div class="review-topic">
-
-                            ${escapeHTML(
-                                item.topic
-                            )}
-
-                        </div>
-
-                        <div class="review-meta">
-
-                            ${
-                                item.subject
-                                ?
-                                escapeHTML(
-                                    item.subject
-                                ) +
-                                " · "
-                                :
-                                ""
-                            }
-
-                            ${
-                                reviewStatus(
-                                    item
-                                ) ===
-                                "overdue"
-                                ?
-                                "🔴 Overdue"
-                                :
-                                "🟢 Due today"
-                            }
-
-                        </div>
-
+                    <div class="review-topic">
+                        ${escapeHTML(item.topic)}
                     </div>
 
+                    <div class="review-meta">
 
-                    <div class="review-actions">
+                        ${
+                            item.subject
+                            ? escapeHTML(item.subject) + " · "
+                            : ""
+                        }
 
-                        <button
-                            class="danger"
-                            onclick="
-                                reviewItem(
-                                    '${item.id}',
-                                    'again'
-                                )
-                            "
-                        >
-                            Again
-                        </button>
-
-                        <button
-                            class="secondary"
-                            onclick="
-                                reviewItem(
-                                    '${item.id}',
-                                    'hard'
-                                )
-                            "
-                        >
-                            Hard
-                        </button>
-
-                        <button
-                            class="primary"
-                            onclick="
-                                reviewItem(
-                                    '${item.id}',
-                                    'good'
-                                )
-                            "
-                        >
-                            Good
-                        </button>
-
-                        <button
-                            class="primary"
-                            onclick="
-                                reviewItem(
-                                    '${item.id}',
-                                    'easy'
-                                )
-                            "
-                        >
-                            Easy
-                        </button>
+                        ${
+                            reviewStatus(item) === "overdue"
+                            ? "🔴 Overdue"
+                            : "🟢 Due today"
+                        }
 
                     </div>
 
                 </div>
-            `
-        )
-        .join("");
+
+
+                <div class="review-actions">
+
+                    <button
+                        class="danger"
+                        onclick="reviewItem('${item.id}', 'again')"
+                    >
+                        Again
+                    </button>
+
+                    <button
+                        class="secondary"
+                        onclick="reviewItem('${item.id}', 'hard')"
+                    >
+                        Hard
+                    </button>
+
+                    <button
+                        class="primary"
+                        onclick="reviewItem('${item.id}', 'good')"
+                    >
+                        Good
+                    </button>
+
+                    <button
+                        class="primary"
+                        onclick="reviewItem('${item.id}', 'easy')"
+                    >
+                        Easy
+                    </button>
+
+                </div>
+
+            </div>
+
+        `).join("");
 }
 
 
@@ -2819,17 +2519,18 @@ function renderDashboardReviews() {
             "dashboardReviews"
         );
 
+    if (!container)
+        return;
+
 
     const due =
-        reviews.filter(
-            item =>
-                reviewStatus(item) !==
-                "upcoming"
-        )
-        .slice(
-            0,
-            5
-        );
+        reviews
+            .filter(
+                item =>
+                    reviewStatus(item) !==
+                    "upcoming"
+            )
+            .slice(0, 5);
 
 
     if (!due.length) {
@@ -2844,46 +2545,36 @@ function renderDashboardReviews() {
 
 
     container.innerHTML =
-        due.map(
-            item => `
+        due.map(item => `
 
-                <div class="review-row">
+            <div class="review-row">
 
-                    <div>
+                <div>
 
-                        <div class="review-topic">
-
-                            ${escapeHTML(
-                                item.topic
-                            )}
-
-                        </div>
-
-                        <div class="review-meta">
-
-                            ${
-                                item.subject ||
-                                ""
-                            }
-
-                        </div>
-
+                    <div class="review-topic">
+                        ${escapeHTML(item.topic)}
                     </div>
 
-                    <button
-                        class="primary"
-                        onclick="
-                            navigate('reviews')
-                        "
-                    >
-                        Review
-                    </button>
+                    <div class="review-meta">
+                        ${
+                            item.subject
+                            ? escapeHTML(item.subject)
+                            : ""
+                        }
+                    </div>
 
                 </div>
 
-            `
-        )
-        .join("");
+                <button
+                    class="primary"
+                    onclick="navigate('reviews')"
+                >
+                    Review
+                </button>
+
+            </div>
+
+        `).join("");
 }
 
 
@@ -2891,9 +2582,7 @@ function renderDashboardReviews() {
    LEADERBOARD
 ========================================================= */
 
-async function loadLeaderboard(
-    type = "weekly"
-) {
+async function loadLeaderboard(type = "weekly") {
 
     const container =
         document.getElementById(
@@ -2902,9 +2591,7 @@ async function loadLeaderboard(
 
 
     document
-        .getElementById(
-            "weeklyTab"
-        )
+        .getElementById("weeklyTab")
         .classList.toggle(
             "active",
             type === "weekly"
@@ -2912,9 +2599,7 @@ async function loadLeaderboard(
 
 
     document
-        .getElementById(
-            "alltimeTab"
-        )
+        .getElementById("alltimeTab")
         .classList.toggle(
             "active",
             type === "alltime"
@@ -2923,20 +2608,17 @@ async function loadLeaderboard(
 
     const table =
         type === "weekly"
-        ?
-        "weekly_leaderboard"
-        :
-        "leaderboard";
+        ? "weekly_leaderboard"
+        : "leaderboard";
 
 
     const {
         data,
         error
-    } =
-        await supabaseClient.
-            .from(table)
-            .select("*")
-            .limit(100);
+    } = await supabase
+        .from(table)
+        .select("*")
+        .limit(100);
 
 
     if (error) {
@@ -2950,7 +2632,7 @@ async function loadLeaderboard(
     }
 
 
-    if (!data.length) {
+    if (!data || !data.length) {
 
         container.innerHTML =
             "<p>No leaderboard data yet.</p>";
@@ -2961,10 +2643,7 @@ async function loadLeaderboard(
 
     container.innerHTML =
         data.map(
-            (
-                row,
-                index
-            ) => {
+            (row, index) => {
 
                 let medal =
                     `${index + 1}`;
@@ -2984,34 +2663,24 @@ async function loadLeaderboard(
                     <div class="rank-row">
 
                         <div class="rank">
-
                             ${medal}
-
                         </div>
 
                         <div class="rank-name">
-
-                            @${escapeHTML(
-                                row.username
-                            )}
-
+                            @${escapeHTML(row.username)}
                         </div>
 
                         <div class="rank-time">
-
                             ${formatDuration(
-                                Number(
-                                    row.total_seconds
-                                )
+                                Number(row.total_seconds || 0)
                             )}
-
                         </div>
 
                     </div>
+
                 `;
             }
-        )
-        .join("");
+        ).join("");
 }
 
 
@@ -3024,9 +2693,7 @@ async function saveGoals() {
     const daily =
         Number(
             document
-                .getElementById(
-                    "dailyGoal"
-                )
+                .getElementById("dailyGoal")
                 .value
         );
 
@@ -3034,9 +2701,7 @@ async function saveGoals() {
     const weekly =
         Number(
             document
-                .getElementById(
-                    "weeklyGoal"
-                )
+                .getElementById("weeklyGoal")
                 .value
         );
 
@@ -3044,52 +2709,36 @@ async function saveGoals() {
     const monthly =
         Number(
             document
-                .getElementById(
-                    "monthlyGoal"
-                )
+                .getElementById("monthlyGoal")
                 .value
         );
 
 
     const {
         error
-    } =
-        await supabaseClient.
-            .from("study_goals")
-            .update({
-
-                daily_goal_seconds:
-                    daily * 60,
-
-                weekly_goal_seconds:
-                    weekly * 60,
-
-                monthly_goal_seconds:
-                    monthly * 60,
-
-                updated_at:
-                    new Date().toISOString()
-
-            })
-            .eq(
-                "user_id",
-                currentUser.id
-            );
+    } = await supabase
+        .from("study_goals")
+        .update({
+            daily_goal_seconds: daily * 60,
+            weekly_goal_seconds: weekly * 60,
+            monthly_goal_seconds: monthly * 60,
+            updated_at: new Date().toISOString()
+        })
+        .eq(
+            "user_id",
+            currentUser.id
+        );
 
 
     if (error) {
 
-        toast(
-            error.message
-        );
+        toast(error.message);
 
         return;
     }
 
 
-    toast(
-        "Goals saved."
-    );
+    toast("Goals saved.");
 }
 
 
@@ -3103,75 +2752,51 @@ function navigate(page) {
         .querySelectorAll(".page")
         .forEach(
             element =>
-                element.classList.add(
-                    "hidden"
-                )
+                element.classList.add("hidden")
         );
 
 
-    document
-        .getElementById(
+    const target =
+        document.getElementById(
             "page-" + page
-        )
-        .classList.remove(
-            "hidden"
         );
+
+
+    if (!target)
+        return;
+
+
+    target.classList.remove("hidden");
 
 
     document
         .querySelectorAll(".nav")
-        .forEach(
-            button => {
+        .forEach(button => {
 
-                button.classList.toggle(
-                    "active",
-                    button.dataset.page ===
-                    page
-                );
-            }
-        );
+            button.classList.toggle(
+                "active",
+                button.dataset.page === page
+            );
+        });
 
 
-    if (page === "dashboard") {
-
+    if (page === "dashboard")
         renderDashboard();
 
-    }
-
-
-    if (page === "history") {
-
+    if (page === "history")
         renderHistory();
 
-    }
-
-
-    if (page === "analytics") {
-
+    if (page === "analytics")
         renderAnalytics();
 
-    }
-
-
-    if (page === "reviews") {
-
+    if (page === "reviews")
         renderReviews();
 
-    }
-
-
-    if (page === "leaderboard") {
-
+    if (page === "leaderboard")
         loadLeaderboard();
 
-    }
-
-
-    if (page === "settings") {
-
+    if (page === "settings")
         loadGoals();
-
-    }
 }
 
 
@@ -3191,47 +2816,37 @@ function formatClock(date) {
 }
 
 
-function escapeHTML(
-    value
-) {
+function escapeHTML(value) {
 
     return String(value)
-        .replaceAll(
-            "&",
-            "&amp;"
-        )
-        .replaceAll(
-            "<",
-            "&lt;"
-        )
-        .replaceAll(
-            ">",
-            "&gt;"
-        )
-        .replaceAll(
-            '"',
-            "&quot;"
-        )
-        .replaceAll(
-            "'",
-            "&#039;"
-        );
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
 }
 
 
-function cleanError(
-    message
-) {
+function cleanError(message) {
+
+    const lower =
+        String(message).toLowerCase();
+
 
     if (
-        message
-            .toLowerCase()
-            .includes(
-                "already registered"
-            )
+        lower.includes("already registered") ||
+        lower.includes("user already registered")
     ) {
 
         return "That username is already taken.";
+    }
+
+
+    if (
+        lower.includes("email rate limit")
+    ) {
+
+        return "Too many attempts. Please wait a little and try again.";
     }
 
 
@@ -3239,32 +2854,24 @@ function cleanError(
 }
 
 
-function toast(
-    message
-) {
+function toast(message) {
 
     const element =
-        document.getElementById(
-            "toast"
-        );
+        document.getElementById("toast");
 
 
-    element.textContent =
-        message;
+    if (!element)
+        return;
 
 
-    element.classList.add(
-        "show"
-    );
+    element.textContent = message;
+
+    element.classList.add("show");
 
 
     setTimeout(
         () => {
-
-            element.classList.remove(
-                "show"
-            );
-
+            element.classList.remove("show");
         },
         3000
     );
@@ -3272,41 +2879,39 @@ function toast(
 
 
 /* =========================================================
-   PAGE LOAD EVENTS
+   RESIZE
 ========================================================= */
 
-window.addEventListener(
-    "resize",
-    () => {
+window.addEventListener("resize", () => {
 
-        if (
-            !document
-                .getElementById(
-                    "page-dashboard"
-                )
-                .classList.contains(
-                    "hidden"
-                )
-        ) {
+    const dashboard =
+        document.getElementById(
+            "page-dashboard"
+        );
 
-            drawWeekChart();
-        }
+    const analytics =
+        document.getElementById(
+            "page-analytics"
+        );
 
 
-        if (
-            !document
-                .getElementById(
-                    "page-analytics"
-                )
-                .classList.contains(
-                    "hidden"
-                )
-        ) {
+    if (
+        dashboard &&
+        !dashboard.classList.contains("hidden")
+    ) {
 
-            renderAnalytics();
-        }
+        drawWeekChart();
     }
-);
+
+
+    if (
+        analytics &&
+        !analytics.classList.contains("hidden")
+    ) {
+
+        renderAnalytics();
+    }
+});
 
 
 /* =========================================================
@@ -3317,11 +2922,50 @@ window.addEventListener(
     "beforeunload",
     () => {
 
-        if (
-            timerState.running
-        ) {
-
+        if (timerState.running)
             saveTimerState();
-        }
     }
 );
+
+
+/* =========================================================
+   MAKE FUNCTIONS AVAILABLE TO HTML onclick=""
+========================================================= */
+
+window.login = login;
+window.signup = signup;
+window.showLogin = showLogin;
+window.showSignup = showSignup;
+
+window.logout = logout;
+
+window.startTimer = startTimer;
+window.pauseTimer = pauseTimer;
+window.resumeTimer = resumeTimer;
+window.stopTimer = stopTimer;
+
+window.navigate = navigate;
+
+window.setAnalyticsRange =
+    setAnalyticsRange;
+
+window.renderHistory =
+    renderHistory;
+
+window.openReviewModal =
+    openReviewModal;
+
+window.closeReviewModal =
+    closeReviewModal;
+
+window.addReviewItem =
+    addReviewItem;
+
+window.reviewItem =
+    reviewItem;
+
+window.loadLeaderboard =
+    loadLeaderboard;
+
+window.saveGoals =
+    saveGoals;
