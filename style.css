@@ -1,9 +1,4 @@
-/* =========================================================
-   GLOBAL
-========================================================= */
-
 :root {
-
     --bg: #0b1020;
     --panel: #11182c;
     --panel2: #172039;
@@ -23,14 +18,11 @@
     --radius: 18px;
 }
 
-
 * {
     box-sizing: border-box;
 }
 
-
 body {
-
     margin: 0;
 
     font-family:
@@ -54,7 +46,6 @@ body {
     min-height: 100vh;
 }
 
-
 button,
 input,
 textarea,
@@ -62,23 +53,23 @@ select {
     font: inherit;
 }
 
-
 button {
     cursor: pointer;
 }
 
+button:disabled {
+    opacity: .6;
+    cursor: wait;
+    transform: none;
+}
 
 .hidden {
     display: none !important;
 }
 
-
-/* =========================================================
-   AUTH
-========================================================= */
+/* AUTH */
 
 .screen {
-
     min-height: 100vh;
 
     display: flex;
@@ -90,9 +81,7 @@ button {
     padding: 20px;
 }
 
-
 .auth-card {
-
     width: 100%;
     max-width: 430px;
 
@@ -112,35 +101,24 @@ button {
     backdrop-filter: blur(20px);
 }
 
-
 .logo {
-
     font-size: 30px;
-
     font-weight: 800;
-
     margin-bottom: 8px;
 }
 
-
 .subtitle {
-
     color: var(--muted);
-
     margin-bottom: 30px;
 }
 
-
 .auth-card h2 {
-
     margin-top: 0;
 }
-
 
 input,
 textarea,
 select {
-
     width: 100%;
 
     padding: 13px 15px;
@@ -160,44 +138,28 @@ select {
     margin-bottom: 13px;
 }
 
-
 input:focus,
 textarea:focus,
 select:focus {
-
-    border-color:
-        var(--primary);
+    border-color: var(--primary);
 }
 
-
 textarea {
-
     min-height: 100px;
-
     resize: vertical;
 }
 
-
 small {
-
     display: block;
-
     color: var(--muted);
-
     margin-top: -7px;
-
     margin-bottom: 14px;
 }
 
-
 button {
-
     border: 0;
-
     color: white;
-
     border-radius: 12px;
-
     padding: 11px 16px;
 
     transition:
@@ -205,15 +167,11 @@ button {
         opacity .15s;
 }
 
-
 button:hover {
-
     transform: translateY(-1px);
 }
 
-
 .primary {
-
     background:
         linear-gradient(
             135deg,
@@ -222,21 +180,15 @@ button:hover {
         );
 }
 
-
 .secondary {
-
     background: #26314e;
 }
 
-
 .danger {
-
     background: var(--red);
 }
 
-
 .ghost {
-
     background: transparent;
 
     border:
@@ -244,9 +196,7 @@ button:hover {
         var(--border);
 }
 
-
 .link-button {
-
     background: transparent;
 
     color: #aaa5ff;
@@ -258,21 +208,14 @@ button:hover {
     margin-top: 10px;
 }
 
-
 .big {
-
     padding: 15px 24px;
-
     font-size: 17px;
 }
 
-
-/* =========================================================
-   HEADER
-========================================================= */
+/* HEADER */
 
 header {
-
     height: 70px;
 
     display: flex;
@@ -281,8 +224,7 @@ header {
 
     justify-content: space-between;
 
-    padding:
-        0 25px;
+    padding: 0 25px;
 
     border-bottom:
         1px solid
@@ -291,8 +233,7 @@ header {
     background:
         rgba(11,16,32,.75);
 
-    backdrop-filter:
-        blur(20px);
+    backdrop-filter: blur(20px);
 
     position: sticky;
 
@@ -301,33 +242,21 @@ header {
     z-index: 10;
 }
 
-
 .brand {
-
     font-size: 20px;
-
     font-weight: 800;
 }
 
-
 .user-area {
-
     display: flex;
-
     align-items: center;
-
     gap: 15px;
-
     color: var(--muted);
 }
 
-
-/* =========================================================
-   LAYOUT
-========================================================= */
+/* LAYOUT */
 
 .layout {
-
     display: grid;
 
     grid-template-columns:
@@ -338,9 +267,7 @@ header {
         calc(100vh - 70px);
 }
 
-
 aside {
-
     padding: 20px;
 
     border-right:
@@ -348,9 +275,7 @@ aside {
         var(--border);
 }
 
-
 .nav {
-
     width: 100%;
 
     background: transparent;
@@ -364,25 +289,19 @@ aside {
     padding: 13px 15px;
 }
 
-
 .nav:hover {
-
     background:
         rgba(255,255,255,.04);
 }
 
-
 .nav.active {
-
     background:
         rgba(108,99,255,.15);
 
     color: white;
 }
 
-
 main {
-
     max-width: 1400px;
 
     width: 100%;
@@ -392,9 +311,7 @@ main {
     padding: 30px;
 }
 
-
 .page-heading {
-
     display: flex;
 
     justify-content: space-between;
@@ -404,30 +321,20 @@ main {
     margin-bottom: 25px;
 }
 
-
 .page-heading h1 {
-
     margin: 0 0 5px;
-
     font-size: 32px;
 }
 
-
 .page-heading p {
-
     margin: 0;
-
     color: var(--muted);
 }
 
-
-/* =========================================================
-   CARDS
-========================================================= */
+/* CARDS */
 
 .card,
 .timer-card {
-
     background:
         rgba(17,24,44,.8);
 
@@ -443,9 +350,7 @@ main {
     margin-bottom: 20px;
 }
 
-
 .card-header {
-
     display: flex;
 
     justify-content: space-between;
@@ -453,27 +358,18 @@ main {
     align-items: center;
 }
 
-
 .card h2 {
-
     margin-top: 0;
 }
 
-
-/* =========================================================
-   TIMER
-========================================================= */
+/* TIMER */
 
 .timer-card {
-
     text-align: center;
-
     padding: 45px 25px;
 }
 
-
 .timer-status {
-
     color: var(--muted);
 
     text-transform: uppercase;
@@ -483,9 +379,7 @@ main {
     font-size: 12px;
 }
 
-
 .timer {
-
     font-size:
         clamp(55px, 9vw, 100px);
 
@@ -497,9 +391,7 @@ main {
         10px 0 25px;
 }
 
-
 .timer-controls {
-
     display: flex;
 
     justify-content: center;
@@ -509,9 +401,7 @@ main {
     gap: 10px;
 }
 
-
 .timer-options {
-
     display: grid;
 
     grid-template-columns:
@@ -522,19 +412,13 @@ main {
     margin-top: 25px;
 }
 
-
 .timer-options input {
-
     margin-bottom: 0;
 }
 
-
-/* =========================================================
-   STATS
-========================================================= */
+/* STATS */
 
 .stats-grid {
-
     display: grid;
 
     grid-template-columns:
@@ -545,9 +429,7 @@ main {
     margin-bottom: 20px;
 }
 
-
 .stat-card {
-
     background:
         rgba(17,24,44,.8);
 
@@ -561,17 +443,12 @@ main {
     padding: 20px;
 }
 
-
 .stat-card span {
-
     color: var(--muted);
-
     font-size: 14px;
 }
 
-
 .stat-card strong {
-
     display: block;
 
     margin-top: 7px;
@@ -579,13 +456,9 @@ main {
     font-size: 28px;
 }
 
-
-/* =========================================================
-   TWO COLUMN
-========================================================= */
+/* TWO COLUMN */
 
 .two-column {
-
     display: grid;
 
     grid-template-columns:
@@ -595,21 +468,14 @@ main {
     gap: 20px;
 }
 
-
 canvas {
-
     width: 100%;
-
     max-height: 300px;
 }
 
-
-/* =========================================================
-   TIMELINE
-========================================================= */
+/* TIMELINE */
 
 .timeline-item {
-
     display: flex;
 
     gap: 15px;
@@ -622,11 +488,8 @@ canvas {
         var(--border);
 }
 
-
 .timeline-dot {
-
     width: 10px;
-
     height: 10px;
 
     background:
@@ -637,21 +500,15 @@ canvas {
     margin-top: 7px;
 }
 
-
 .timeline-content {
-
     flex: 1;
 }
 
-
 .timeline-title {
-
     font-weight: 700;
 }
 
-
 .timeline-meta {
-
     color: var(--muted);
 
     font-size: 13px;
@@ -659,13 +516,9 @@ canvas {
     margin-top: 4px;
 }
 
-
-/* =========================================================
-   HISTORY
-========================================================= */
+/* HISTORY */
 
 .filters {
-
     display: grid;
 
     grid-template-columns:
@@ -677,9 +530,7 @@ canvas {
     margin-bottom: 20px;
 }
 
-
 .session-row {
-
     display: grid;
 
     grid-template-columns:
@@ -698,23 +549,16 @@ canvas {
         var(--border);
 }
 
-
 .session-time {
-
     color: var(--muted);
-
     font-size: 13px;
 }
 
-
 .session-subject {
-
     font-weight: 700;
 }
 
-
 .session-notes {
-
     color: var(--muted);
 
     font-size: 13px;
@@ -722,21 +566,14 @@ canvas {
     margin-top: 3px;
 }
 
-
 .session-duration {
-
     text-align: right;
-
     font-weight: 700;
 }
 
-
-/* =========================================================
-   RANGE
-========================================================= */
+/* RANGE */
 
 .range-buttons {
-
     display: flex;
 
     gap: 8px;
@@ -746,9 +583,7 @@ canvas {
     margin-bottom: 20px;
 }
 
-
 .range-buttons button {
-
     background:
         #202a45;
 
@@ -756,22 +591,16 @@ canvas {
         var(--muted);
 }
 
-
 .range-buttons button:hover {
-
     background:
         var(--primary);
 
     color: white;
 }
 
-
-/* =========================================================
-   SUBJECTS
-========================================================= */
+/* SUBJECTS */
 
 .subject-row {
-
     display: grid;
 
     grid-template-columns:
@@ -787,9 +616,7 @@ canvas {
         var(--border);
 }
 
-
 .subject-bar {
-
     height: 7px;
 
     background:
@@ -802,9 +629,7 @@ canvas {
     overflow: hidden;
 }
 
-
 .subject-fill {
-
     height: 100%;
 
     background:
@@ -815,13 +640,9 @@ canvas {
         );
 }
 
-
-/* =========================================================
-   HEATMAP
-========================================================= */
+/* HEATMAP */
 
 #heatmap {
-
     display: grid;
 
     grid-template-columns:
@@ -830,9 +651,7 @@ canvas {
     gap: 5px;
 }
 
-
 .heat-cell {
-
     aspect-ratio: 1;
 
     border-radius: 3px;
@@ -841,33 +660,25 @@ canvas {
         #172039;
 }
 
-
 .heat-1 {
     background: #303a63;
 }
-
 
 .heat-2 {
     background: #4c4ac2;
 }
 
-
 .heat-3 {
     background: #6c63ff;
 }
-
 
 .heat-4 {
     background: #9a94ff;
 }
 
-
-/* =========================================================
-   REVIEWS
-========================================================= */
+/* REVIEWS */
 
 .review-row {
-
     display: flex;
 
     justify-content: space-between;
@@ -883,15 +694,11 @@ canvas {
         var(--border);
 }
 
-
 .review-topic {
-
     font-weight: 700;
 }
 
-
 .review-meta {
-
     color: var(--muted);
 
     font-size: 13px;
@@ -899,9 +706,7 @@ canvas {
     margin-top: 5px;
 }
 
-
 .review-actions {
-
     display: flex;
 
     gap: 6px;
@@ -909,48 +714,32 @@ canvas {
     flex-wrap: wrap;
 }
 
-
 .review-actions button {
-
     font-size: 12px;
-
     padding: 8px 10px;
 }
 
-
-/* =========================================================
-   LEADERBOARD
-========================================================= */
+/* LEADERBOARD */
 
 .tabs {
-
     display: flex;
-
     gap: 5px;
-
     margin-bottom: 20px;
 }
 
-
 .tab {
-
     background: transparent;
-
     color: var(--muted);
 }
 
-
 .tab.active {
-
     background:
         var(--primary);
 
     color: white;
 }
 
-
 .rank-row {
-
     display: grid;
 
     grid-template-columns:
@@ -969,21 +758,15 @@ canvas {
         var(--border);
 }
 
-
 .rank {
-
     font-size: 24px;
 }
 
-
 .rank-name {
-
     font-weight: 700;
 }
 
-
 .rank-time {
-
     text-align: right;
 
     color:
@@ -992,13 +775,9 @@ canvas {
     font-weight: 700;
 }
 
-
-/* =========================================================
-   MODAL
-========================================================= */
+/* MODAL */
 
 .modal {
-
     position: fixed;
 
     inset: 0;
@@ -1017,9 +796,7 @@ canvas {
     z-index: 100;
 }
 
-
 .modal-card {
-
     width: 100%;
 
     max-width: 500px;
@@ -1039,9 +816,7 @@ canvas {
     position: relative;
 }
 
-
 .modal-close {
-
     position: absolute;
 
     top: 10px;
@@ -1055,13 +830,9 @@ canvas {
     font-size: 25px;
 }
 
-
-/* =========================================================
-   TOAST
-========================================================= */
+/* TOAST */
 
 #toast {
-
     position: fixed;
 
     bottom: 25px;
@@ -1097,30 +868,22 @@ canvas {
         .25s;
 }
 
-
 #toast.show {
-
     opacity: 1;
 
     transform:
         translateY(0);
 }
 
-
-/* =========================================================
-   MOBILE
-========================================================= */
+/* MOBILE */
 
 @media(max-width: 900px) {
 
     .layout {
-
         display: block;
     }
 
-
     aside {
-
         display: flex;
 
         overflow-x: auto;
@@ -1136,9 +899,7 @@ canvas {
         padding: 10px;
     }
 
-
     .nav {
-
         white-space: nowrap;
 
         width: auto;
@@ -1146,98 +907,75 @@ canvas {
         margin: 0;
     }
 
-
     main {
-
         padding: 18px;
     }
 
-
     .stats-grid {
-
         grid-template-columns:
             repeat(2, 1fr);
     }
 
-
     .two-column {
-
         grid-template-columns:
             1fr;
     }
-
 
     .timer-options {
-
         grid-template-columns:
             1fr;
     }
 
-
     .session-row {
-
         grid-template-columns:
             1fr
             auto;
     }
 
-
     .session-time {
-
         grid-column:
             1 / -1;
     }
 
-
     .session-duration {
-
         text-align:
             right;
     }
 
+    .review-row {
+        align-items: flex-start;
+        flex-direction: column;
+    }
 }
-
 
 @media(max-width: 500px) {
 
     .auth-card {
-
         padding: 25px;
     }
 
-
     header {
-
         padding: 0 15px;
     }
 
-
     .user-area .ghost {
-
         display: none;
     }
 
-
     .stats-grid {
-
         grid-template-columns:
             1fr 1fr;
     }
 
-
     .stat-card strong {
-
         font-size:
             21px;
     }
 
-
     .rank-row {
-
         grid-template-columns:
             50px
             1fr
             90px;
     }
-
 }
