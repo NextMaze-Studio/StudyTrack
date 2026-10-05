@@ -1,24 +1,17 @@
 /* =========================================================
    STUDYTRACK APP
 ========================================================= */
-const {
-    createClient
-} = window.supabase;
 
+/* =========================================================
+   STUDYTRACK APP
+========================================================= */
 
-const supabase = createClient(
-    window.STUDYTRACK_CONFIG.SUPABASE_URL,
-    window.STUDYTRACK_CONFIG.SUPABASE_ANON_KEY
-);
+const supabaseClient.Client =
+    window.supabaseClient..createClient(
+        window.STUDYTRACK_CONFIG.supabaseClient._URL,
+        window.STUDYTRACK_CONFIG.supabaseClient._ANON_KEY
+    );
 
-const {
-    createClient
-} = window.supabase;
-
-
-const supabase = createClient(
-    window.STUDYTRACK_CONFIG.SUPABASE_URL,
-    window.STUDYTRACK_CONFIG.SUPABASE_ANON_KEY
 );
 
 
@@ -58,7 +51,7 @@ document.addEventListener(
 
         const {
             data
-        } = await supabase.auth.getSession();
+        } = await supabaseClient..auth.getSession();
 
         if (data.session) {
 
@@ -76,7 +69,7 @@ document.addEventListener(
 );
 
 
-supabase.auth.onAuthStateChange(
+supabaseClient..auth.onAuthStateChange(
     async (event, session) => {
 
         if (session) {
@@ -211,7 +204,7 @@ async function signup() {
         data,
         error
     } =
-        await supabase.auth.signUp({
+        await supabaseClient..auth.signUp({
 
             email,
 
@@ -286,7 +279,7 @@ async function login() {
         data,
         error
     } =
-        await supabase.auth.signInWithPassword({
+        await supabaseClient..auth.signInWithPassword({
 
             email:
                 usernameEmail(username),
@@ -318,7 +311,7 @@ async function login() {
 
 async function logout() {
 
-    await supabase.auth.signOut();
+    await supabaseClient..auth.signOut();
 
     stopTimerInterval();
 
@@ -371,7 +364,7 @@ async function loadProfile() {
         data,
         error
     } =
-        await supabase
+        await supabaseClient.
             .from("profiles")
             .select("*")
             .eq("id", currentUser.id)
@@ -424,7 +417,7 @@ async function loadSessions() {
         data,
         error
     } =
-        await supabase
+        await supabaseClient.
             .from("study_sessions")
             .select("*")
             .eq("user_id", currentUser.id)
@@ -456,7 +449,7 @@ async function loadReviews() {
         data,
         error
     } =
-        await supabase
+        await supabaseClient.
             .from("review_items")
             .select("*")
             .eq("user_id", currentUser.id)
@@ -487,7 +480,7 @@ async function loadGoals() {
     const {
         data
     } =
-        await supabase
+        await supabaseClient.
             .from("study_goals")
             .select("*")
             .eq("user_id", currentUser.id)
@@ -864,7 +857,7 @@ async function stopTimer() {
         data,
         error
     } =
-        await supabase
+        await supabaseClient.
             .from("study_sessions")
             .insert({
 
@@ -2311,7 +2304,7 @@ async function addReviewItem() {
         data,
         error
     } =
-        await supabase
+        await supabaseClient.
             .from("review_items")
             .insert({
 
@@ -2525,7 +2518,7 @@ async function reviewItem(
         data,
         error
     } =
-        await supabase
+        await supabaseClient.
             .from("review_items")
             .update({
 
@@ -2940,7 +2933,7 @@ async function loadLeaderboard(
         data,
         error
     } =
-        await supabase
+        await supabaseClient.
             .from(table)
             .select("*")
             .limit(100);
@@ -3061,7 +3054,7 @@ async function saveGoals() {
     const {
         error
     } =
-        await supabase
+        await supabaseClient.
             .from("study_goals")
             .update({
 
