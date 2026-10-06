@@ -4,16 +4,16 @@
   <meta charset="UTF-8">
 
   <!-- =========================================================
-       STUDYTRACK
+       StudyFlow
        Single-file education / study tracking application
        Designed for GitHub Pages / static hosting
        ========================================================= -->
 
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description"
-        content="StudyTrack - Track study time, sessions, analytics and spaced repetition.">
+        content="StudyFlow - Track study time, sessions, analytics and spaced repetition.">
 
-  <title>StudyTrack — Study Smarter</title>
+  <title>StudyFlow — Study Smarter</title>
 
   <!-- Bootstrap 5 -->
   <link
@@ -821,7 +821,7 @@
         <span class="brand-mark">
           <i class="bi bi-check2"></i>
         </span>
-        StudyTrack
+        StudyFlow
       </div>
 
       <div id="loginPanel">
@@ -870,7 +870,7 @@
         </form>
 
         <div class="auth-switch">
-          New to StudyTrack?
+          New to StudyFlow?
           <button id="showRegister">Create account</button>
         </div>
 
@@ -881,7 +881,7 @@
         <h1 class="h3 fw-bold mb-2">Create your account.</h1>
 
         <p class="text-muted-custom mb-4">
-          Choose one unique StudyTrack username.
+          Choose one unique StudyFlow username.
         </p>
 
         <form id="registerForm" novalidate>
@@ -984,7 +984,7 @@
         <span class="brand-mark">
           <i class="bi bi-check2"></i>
         </span>
-        StudyTrack
+        StudyFlow
       </a>
 
       <button
@@ -1102,7 +1102,7 @@
               </h1>
 
               <p class="text-muted-custom mb-0">
-                Start a session, focus, and let StudyTrack build your history.
+                Start a session, focus, and let StudyFlow build your history.
               </p>
 
             </div>
@@ -1272,7 +1272,7 @@
               </div>
 
               <div class="mt-4 small opacity-75">
-                Your timer continues while you navigate StudyTrack.
+                Your timer continues while you navigate StudyFlow.
               </div>
 
             </div>
@@ -1799,7 +1799,7 @@
           </h1>
 
           <p class="text-muted-custom">
-            StudyTrack automatically creates a review timetable instead of asking you to remember when to revise.
+            StudyFlow automatically creates a review timetable instead of asking you to remember when to revise.
           </p>
 
         </div>
@@ -1814,7 +1814,7 @@
             <div class="card-custom p-4 h-100 reveal">
 
               <h2 class="h4 fw-bold mb-3">
-                StudyTrack spaced repetition schedule
+                StudyFlow spaced repetition schedule
               </h2>
 
               <p class="text-muted-custom">
@@ -2175,7 +2175,7 @@
           </h1>
 
           <p class="text-muted-custom">
-            Compare study consistency with other StudyTrack users.
+            Compare study consistency with other StudyFlow users.
           </p>
 
         </div>
@@ -2270,7 +2270,7 @@
 
           <div class="hero-label reveal">
             <i class="bi bi-circle-fill"></i>
-            StudyTrack
+            StudyFlow
           </div>
 
           <h1 class="reveal delay-1">
@@ -2279,7 +2279,7 @@
           </h1>
 
           <p class="hero-copy reveal delay-2">
-            StudyTrack turns your study sessions into a measurable system.
+            StudyFlow turns your study sessions into a measurable system.
             Track time, see patterns, build a history and review your learning
             at the right intervals.
           </p>
@@ -2557,7 +2557,7 @@
                 </div>
 
                 <p class="text-muted-custom">
-                  A future backend-powered StudyTrack experience.
+                  A future backend-powered StudyFlow experience.
                 </p>
 
                 <ul class="feature-list">
@@ -2734,7 +2734,7 @@
 
                     <div class="accordion-body">
                       Completed sessions remain saved. If a timer was running,
-                      StudyTrack also stores its start/pause state and reconstructs
+                      StudyFlow also stores its start/pause state and reconstructs
                       the elapsed time when you return.
                     </div>
 
@@ -2944,7 +2944,7 @@
       <div class="footer-row">
 
         <div>
-          © <span id="footerYear"></span> StudyTrack
+          © <span id="footerYear"></span> StudyFlow
         </div>
 
         <div class="footer-socials">
@@ -3016,7 +3016,7 @@
 
 <script>
 /* =============================================================
-   STUDYTRACK APPLICATION
+   StudyFlow APPLICATION
    =============================================================
 
    Architecture:
@@ -3053,9 +3053,9 @@
    GLOBAL STATE
    ============================================================= */
 
-const STORAGE_KEY = "studytrack_users_v1";
-const CURRENT_USER_KEY = "studytrack_current_user_v1";
-const THEME_KEY = "studytrack_theme_v1";
+const STORAGE_KEY = "StudyFlow_users_v1";
+const CURRENT_USER_KEY = "StudyFlow_current_user_v1";
+const THEME_KEY = "StudyFlow_theme_v1";
 
 let currentUser = null;
 
@@ -3659,7 +3659,7 @@ function getElapsedSeconds() {
 function persistTimer() {
 
   localStorage.setItem(
-    "studytrack_timer_" +
+    "StudyFlow_timer_" +
     currentUser.username,
 
     JSON.stringify({
@@ -3680,7 +3680,7 @@ function persistTimer() {
 function restoreTimer() {
 
   const key =
-    "studytrack_timer_" +
+    "StudyFlow_timer_" +
     currentUser.username;
 
   const stored =
@@ -3921,7 +3921,7 @@ function resetTimer() {
   };
 
   localStorage.removeItem(
-    "studytrack_timer_" +
+    "StudyFlow_timer_" +
     currentUser.username
   );
 
@@ -4159,7 +4159,7 @@ function completeReview(reviewId) {
 /**
  * A lightweight Leitner flashcard scheduler.
  *
- * This gives StudyTrack a second learning method:
+ * This gives StudyFlow a second learning method:
  *
  * Box 1 = 1 day
  * Box 2 = 2 days
